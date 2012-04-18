@@ -121,7 +121,7 @@ sh -c "$bec"
 emerge -1q timezone-data
 emerge -qkj gentoo-sources genkernel \
 	grub:2 $fsprogs \
-	msmtp vixie-cron syslog-ng dhcpcd ntp
+	msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils
 
 sh -c "$aec"
 
