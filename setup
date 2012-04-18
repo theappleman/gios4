@@ -13,7 +13,7 @@ get_fstype() {
 # This will fail if /usr/portage has not been prepared
 env-update >/dev/null && source /etc/profile
 
-while true; do
+while test "${#@}" -gt 0; do
 	case "$1" in
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
