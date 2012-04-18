@@ -9,7 +9,8 @@ mount --rbind /sys $INSTDIR/sys
 test -f $INSTDIR/etc/resolv.conf || cp -L /etc/resolv.conf $INSTDIR/etc
 
 if test x"$1" = "xsetup"; then
-	chroot $INSTDIR /setup
+	shift
+	chroot $INSTDIR /setup "$@"
 else
 	echo "# chroot $INSTDIR /bin/bash"
 fi
