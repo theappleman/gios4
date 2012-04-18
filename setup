@@ -15,6 +15,14 @@ while true; do
 	-2)	bec="emerge -qje system;"
 		shift
 		;;
+	# Set profile to hardened
+	-h)	shift
+		bec="eselect profile set hardened/linux/$(uname -m | sed s/amd/x86_/);"
+		for i in gcc libtool binutils linux-headers glibc; do
+			bec="$bec emerge -q1 $i;"
+		done
+		#bec="$bec emerge -qje system;"
+		;;
 	# open a chrooted shell after installation
 	-i)	aac="$aac /bin/sh"
 		PS1="(chroot) $PS1"
