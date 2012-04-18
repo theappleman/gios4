@@ -37,7 +37,7 @@ cat >/etc/hosts <<EOF
 EOF
 
 # The following awk scripts could be simplified to:
-#	{ x=NF-1; print $x "." $NF }
+#	{ print $(NF-1) "." $NF }
 # However, if you change the '(NF-1)' below to '2', you just chop off
 # the first part (if you have deeper hostnames and more robust mail)
 cat >>/etc/msmtprc <<EOF
@@ -47,7 +47,7 @@ domain $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i)
 EOF
 
 cat >>/etc/fstab <<EOF
-$(blkid | grep $BOOTPART | awk -F\" '{ print "UUID=\"" $2 "\"", "/boot", $3 }') noatime,noauto 1 2
+$(blkid | grep $BOOTPART | awk -F\" '{ print "UUID=\"" $2 "\"", "/boot", $(NR-1) }') noatime,noauto 1 2
 EOF
 
 aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
@@ -92,7 +92,7 @@ $aec
 genkernel $gkopts "$@" all
 grub2-install /dev/sda
 cat >>/etc/fstab <<EOF
-$(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"", "/", $3 }') noatime,compress 1 1
+$(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"", "/", $(NR-1) }') noatime,compress 1 1
 EOF
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
