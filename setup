@@ -57,8 +57,8 @@ emerge -qkj gentoo-sources genkernel \
 
 genkernel "$@" all
 grub2-install /dev/sda
-grub2-mkconfig -o /boot/grub2/grub.cfg
 cat >>/etc/fstab <<EOF
 $(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"", "/", $3 }') noatime,compress 1 1
 EOF
+grub2-mkconfig -o /boot/grub2/grub.cfg
 
