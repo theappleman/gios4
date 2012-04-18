@@ -7,6 +7,9 @@ env-update && source /etc/profile
 
 while true; do
 	case "$1" in
+	# open a chrooted shell after installation
+	-i)	aac="$aac /bin/sh"
+		PS1="(chroot) $PS1" ;;
 	--)	shift; break
 		;;
 	*)	if test x"$NEWHOST" = "x"; then
@@ -100,3 +103,4 @@ $(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"",
 EOF
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
+$aac
