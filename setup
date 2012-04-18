@@ -37,8 +37,8 @@ while true; do
 		shift ;;
 	--)	shift; break
 		;;
-	*)	if test x"$NEWHOST" = "x"; then
-			NEWHOST=$1
+	*)	if test x"$FQDN" = "x"; then
+			FQDN=$1
 		elif test x"$BOOTPART" = "x"; then
 			BOOTPART=$1
 		else
@@ -49,29 +49,31 @@ while true; do
 	esac
 done
 
-test x"$NEWHOST" = "x" && read -e -p "Hostname: " NEWHOST
+test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
 test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
 passwd
 
-
-cat >/etc/hostname <<EOF
-hostname="$(echo $NEWHOST | awk -F. '{print $1}')"
-EOF
-
-cat >/etc/hosts <<EOF
-127.0.0.1 $NEWHOST $(echo $NEWHOST | awk -F. '{print $1}') localhost
-::1 $NEWHOST $(echo $NEWHOST | awk -F. '{print $1}') localhost
-EOF
-
-# The following awk scripts could be simplified to:
+HOSTNAME="$(echo $FQDN | awk -F. '{print $1}')"
+# The following awk script could be simplified to:
 #	{ print $(NF-1) "." $NF }
 # However, if you change the '(NF-1)' below to '2', you just chop off
 # the first part (if you have deeper hostnames and more robust mail)
+DOMAIN="$(echo $FQDN | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')"
+
+cat >/etc/hostname <<EOF
+hostname="$HOSTNAME"
+EOF
+
+cat >/etc/hosts <<EOF
+127.0.0.1 $FQDN $HOSTNAME localhost
+::1 $FQDN $HOSTNAME localhost
+EOF
+
 cat >>/etc/msmtprc <<EOF
-maildomain $NEWHOST
-host $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')
-domain $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')
+maildomain $FQDN
+host $DOMAIN
+domain $DOMAIN
 EOF
 
 cat >>/etc/fstab <<EOF
