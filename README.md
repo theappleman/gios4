@@ -10,27 +10,31 @@ can set up a homogenous gentoo setup.
 Boot into your installation environment; be that live media (e.g. CD, USB)
 or an existing Linux distribution.
 
-- Partition and format your drives
-> \# sgdisk  -o -a 2 -n 1:34:2047 -t 1:ef02 -c 1:bios-boot -a 2048 \  
+1. Partition and format your drives
+> \# sgdisk -o -a 2 -n 1:34:2047 -t 1:ef02 -c 1:bios-boot -a 2048 \  
 > 	-n 2:2048:64M -t 2:8300 -c 2:boot \  
 > 	-N 3 -t 3:8e00 -c 3:root \  
 > 	-G /dev/sda  
+
   * Don't mount /boot
-- Download a stage3 tarball  
+2. Download a stage3 tarball  
 > \# wget ftp://distfiles.gentoo.org/pub/gentoo/releases/amd64/current-iso/stage3-amd64-\*.tar.bz2
+
   * browse http://distfiles.gentoo.org/releases
-- Download a portage snapshot
+3. Download a portage snapshot
   * Or, prepare an existing gentoo installation to NFS portage
-- Unpack the stage3 and portage tree
-- Unpack the stage3.5 tarball
-- Run the recovery script (you must do this every time you boot into your
+4. Unpack the stage3 and portage tree
+5. Unpack the stage3.5 tarball
+6. Run the recovery script (you must do this every time you boot into your
   installation environment)  
 > \# /mnt/gentoo/recovery
-- Run the setup script under chroot  
+
+7. Run the setup script under chroot  
 > \# chroot /mnt/gentoo /setup
+
   * Answer easy questions
-- Wait; and verify the installation
-- Reboot!
+8. Wait; and verify the installation
+9. Reboot!
 
 ## FAQ
 ### Why does setup ask those questions?
