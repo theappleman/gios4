@@ -116,14 +116,14 @@ for i in $(get_fstype); do
 	esac
 done
 
-sh -c "$bec"
+test x"$bec" = "x" || sh -c "$bec"
 
 emerge -1q timezone-data
 emerge -qkj gentoo-sources genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils
 
-sh -c "$aec"
+test x"$aec" = "x" || sh -c "$aec"
 
 genkernel $gkopts "$@" all
 grub2-install /dev/sda
@@ -134,4 +134,4 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 eselect news read
 
-sh -c "$aac"
+test x"$aac" = "x" || sh -c "$aac"
