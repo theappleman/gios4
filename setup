@@ -82,7 +82,7 @@ EOF
 
 aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
 # blkid is part of e2fsprogs and should be in system
-for i in get_fstype(); do
+for i in $(get_fstype); do
 	case "$i" in
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			gkopts="$gkopts --luks"
