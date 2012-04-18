@@ -2,6 +2,7 @@
 
 set -e
 
+# This will fail if /usr/portage has not been prepared
 env-update && source /etc/profile
 
 while true; do
@@ -23,11 +24,6 @@ done
 test x"$NEWHOST" = "x" && read -e -p "Hostname: " NEWHOST
 test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
-#echo $NEWHOST
-#echo $BOOTPART
-#echo "$@"
-#exit
-
 passwd
 
 
@@ -40,6 +36,10 @@ cat >/etc/hosts <<EOF
 ::1 $NEWHOST $(echo $NEWHOST | awk -F. '{print $1}') localhost
 EOF
 
+# The following awk scripts could be simplified to:
+#	{ x=NF-1; print $x "." $NF }
+# However, if you change the '(NF-1)' below to '2', you just chop off
+# the first part (if you have deeper hostnames and more robust mail)
 cat >>/etc/msmtprc <<EOF
 maildomain $NEWHOST
 host $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')
