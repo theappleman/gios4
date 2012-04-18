@@ -11,7 +11,7 @@ get_fstype() {
 }
 
 # This will fail if /usr/portage has not been prepared
-env-update && source /etc/profile
+env-update >/dev/null && source /etc/profile
 
 while true; do
 	case "$1" in
@@ -118,7 +118,7 @@ done
 
 $bec
 
-emerge -1 timezone-data
+emerge -1q timezone-data
 emerge -qkj gentoo-sources genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd ntp
