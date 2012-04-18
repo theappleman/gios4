@@ -128,7 +128,7 @@ test x"$aec" = "x" || sh -c "$aec"
 genkernel $gkopts "$@" all
 grub2-install /dev/sda
 cat >>/etc/fstab <<EOF
-$(get_uuid $(grub2-probe -t device /) /) noatime,compress 1 1
+$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
 EOF
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
