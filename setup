@@ -77,6 +77,10 @@ for i in $(blkid | awk -F\" '{print $(NF-1)}' | sort -u); do
 		gkopts="$gkopts --mdadm"
 		aec="$aec rc-update add mdraid boot;"
 		;;
+	fat*)	fsprogs="$fsprogs dosfstools"
+		;;
+	ntfs)	fsprogs="$fsprogs ntfs3g"
+		;;
 	ext*)	;; # nothing needs to be done
 	*)	;; # unknown entry
 	esac
