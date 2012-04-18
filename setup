@@ -61,7 +61,7 @@ HOSTNAME="$(echo $FQDN | awk -F. '{print $1}')"
 # the first part (if you have deeper hostnames and more robust mail)
 DOMAIN="$(echo $FQDN | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')"
 
-cat >/etc/hostname <<EOF
+cat >/etc/conf.d/hostname <<EOF
 hostname="$HOSTNAME"
 EOF
 
