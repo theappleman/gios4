@@ -7,6 +7,14 @@ env-update && source /etc/profile
 
 while true; do
 	case "$1" in
+	# do a stage1 install
+	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
+		bec="$bec emerge -qje system;"
+		shift
+		;;
+	-2)	bec="emerge -qje system;"
+		shift
+		;;
 	# open a chrooted shell after installation
 	-i)	aac="$aac /bin/sh"
 		PS1="(chroot) $PS1"
@@ -89,6 +97,8 @@ for i in $(blkid | awk -F\" '{print $(NF-1)}' | sort -u); do
 	*)	;; # unknown entry
 	esac
 done
+
+$bec
 
 emerge -1 timezone-data
 emerge -qkj gentoo-sources genkernel \
