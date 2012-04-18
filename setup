@@ -9,7 +9,8 @@ while true; do
 	case "$1" in
 	# open a chrooted shell after installation
 	-i)	aac="$aac /bin/sh"
-		PS1="(chroot) $PS1" ;;
+		PS1="(chroot) $PS1"
+		shift ;;
 	--)	shift; break
 		;;
 	*)	if test x"$NEWHOST" = "x"; then
