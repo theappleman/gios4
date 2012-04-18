@@ -50,12 +50,38 @@ cat >>/etc/fstab <<EOF
 $(blkid | grep $BOOTPART | awk -F\" '{ print "UUID=\"" $2 "\"", "/boot", $3 }') noatime,noauto 1 2
 EOF
 
+# blkid is part of e2fsprogs and should be in system
+for i in $(blkid | awk -F\" '{print $(NF-1)}' | sort -u); do
+	case "$i" in
+	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
+			gkopts="$gkopts --luks"
+			;;
+	LVM2_member)	fsprogs="$fsprogs lvm2"
+			gkopts="$gkopts --lvm"
+			;;
+	btrfs)	fsprogs="$fsprogs btrfs-progs"
+		;; # as part of this overlay, btrfs-progs is unmasked
+	xfs)	fsprogs="$fsprogs xfsprogs"
+		;;
+	# XXX: the following are untested and need capitalisation checks
+	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
+			;;
+	jfs)	fsprogs="$fsprogs jfsutils"
+		;;
+	*raid*)	fsprogs="$fsprogs mdadm"
+		gkopts="$gkopts --mdadm"
+		;;
+	ext*)	;; # nothing needs to be done
+	*)	;; # unknown entry
+	esac
+done
+
 emerge -1 timezone-data
 emerge -qkj gentoo-sources genkernel \
-	grub btrfs-progs xfsprogs \
+	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd ntp
 
-genkernel "$@" all
+genkernel $gkopts "$@" all
 grub2-install /dev/sda
 cat >>/etc/fstab <<EOF
 $(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"", "/", $3 }') noatime,compress 1 1
