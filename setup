@@ -132,4 +132,6 @@ $(get_uuid $(grub2-probe -t device /) /) noatime,compress 1 1
 EOF
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
+eselect news read
+
 $aac
