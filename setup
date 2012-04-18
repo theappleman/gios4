@@ -1,0 +1,64 @@
+#!/bin/sh
+
+set -e
+
+env-update && source /etc/profile
+
+while true; do
+	case "$1" in
+	--)	shift; break
+		;;
+	*)	if test x"$NEWHOST" = "x"; then
+			NEWHOST=$1
+		elif test x"$BOOTPART" = "x"; then
+			BOOTPART=$1
+		else
+			break
+		fi
+		shift
+		;;
+	esac
+done
+
+test x"$NEWHOST" = "x" && read -e -p "Hostname: " NEWHOST
+test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
+
+#echo $NEWHOST
+#echo $BOOTPART
+#echo "$@"
+#exit
+
+passwd
+
+
+cat >/etc/hostname <<EOF
+hostname="$(echo $NEWHOST | awk -F. '{print $1}')"
+EOF
+
+cat >/etc/hosts <<EOF
+127.0.0.1 $NEWHOST $(echo $NEWHOST | awk -F. '{print $1}') localhost
+::1 $NEWHOST $(echo $NEWHOST | awk -F. '{print $1}') localhost
+EOF
+
+cat >>/etc/msmtprc <<EOF
+maildomain $NEWHOST
+host $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')
+domain $(echo $NEWHOST | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')
+EOF
+
+cat >>/etc/fstab <<EOF
+$(blkid | grep $BOOTPART | awk -F\" '{ print "UUID=\"" $2 "\"", "/boot", $3 }') noatime,noauto 1 2
+EOF
+
+emerge -1 timezone-data
+emerge -qkj gentoo-sources genkernel \
+	grub btrfs-progs xfsprogs \
+	msmtp vixie-cron syslog-ng dhcpcd ntp
+
+genkernel "$@" all
+grub2-install /dev/sda
+grub2-mkconfig -o /boot/grub2/grub.cfg
+cat >>/etc/fstab <<EOF
+$(blkid | grep $(grub2-probe -t device /) | awk -F\" '{ print "UUID=\"" $2 "\"", "/", $3 }') noatime,compress 1 1
+EOF
+

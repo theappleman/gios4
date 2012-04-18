@@ -1,0 +1,16 @@
+#!/bin/sh
+
+INSTDIR=$(dirname $0)
+
+mount -t proc proc $INSTDIR/proc
+mount --rbind /dev $INSTDIR/dev
+mount --rbind /sys $INSTDIR/sys
+
+test -f $INSTDIR/etc/resolv.conf || cp -L /etc/resolv.conf $INSTDIR/etc
+
+if test x"$1" = "xsetup"; then
+	chroot $INSTDIR /setup
+else
+	echo "# chroot $INSTDIR /bin/bash"
+fi
+
