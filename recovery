@@ -10,7 +10,7 @@ test -f $INSTDIR/etc/resolv.conf || cp -L /etc/resolv.conf $INSTDIR/etc
 
 if test x"$1" = "xsetup"; then
 	shift
-	chroot $INSTDIR /setup "$@"
+	env -i TERM=$TERM SHELL=/bin/bash HOME=$HOME chroot $INSTDIR /setup "$@"
 else
 	echo "# chroot $INSTDIR /bin/bash"
 fi
