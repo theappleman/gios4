@@ -86,7 +86,7 @@ for i in $(get_fstype); do
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			gkopts="$gkopts --lvm"
-			aec="$aec rc-update add lvm2 boot;"
+			aec="$aec rc-update add lvm boot;"
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		# as part of this overlay, btrfs-progs is unmasked
