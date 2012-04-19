@@ -78,11 +78,21 @@ for i in $(get_fstype); do
 	case "$i" in
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			gkopts="$gkopts --luks --menuconfig"
-			mkdir /etc/portage/package.use
-			echo dev-libs/popt static-libs>>/etc/portage/package.use/dev-libs
-			echo dev-libs/libgcrypt static-libs>>/etc/portage/package.use/dev-libs
-			echo dev-libs/libgpg-error static-libs>>/etc/portage/package.use/dev-libs
-			echo sys-apps/util-linux static-libs>>/etc/portage/package.use/sys-apps
+			packageuse=/etc/portage/package.use
+			if test -f $packageuse; then
+				cat >>$packageuse<<-EOF
+				dev-libs/popt static-libs
+				dev-libs/libgcrypt static-libs
+				dev-libs/libgpg-error static-libs
+				sys-apps/util-linux static-libs
+				EOF
+			else
+				test -d $packageuse || mkdir -p $packageuse
+				echo dev-libs/popt static-libs>>$packageuse/dev-libs
+				echo dev-libs/libgcrypt static-libs>>$packageuse/dev-libs
+				echo dev-libs/libgpg-error static-libs>>$packageuse/dev-libs
+				echo sys-apps/util-linux static-libs>>$packageuse/sys-apps
+			fi
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			gkopts="$gkopts --lvm"
