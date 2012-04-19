@@ -121,7 +121,8 @@ test x"$bec" = "x" || sh -c "$bec"
 emerge -1q timezone-data
 emerge -qkj gentoo-sources genkernel \
 	grub:2 $fsprogs \
-	msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils
+	msmtp vixie-cron syslog-ng dhcpcd \
+	ntp nfs-utils acpid
 
 test x"$aec" = "x" || sh -c "$aec"
 
