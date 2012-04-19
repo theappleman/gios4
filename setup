@@ -29,6 +29,7 @@ while test "${#@}" -gt 0; do
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
+		sources="hardened-sources"
 		#bec="$bec emerge -qje system;"
 		;;
 	# open a chrooted shell after installation
@@ -119,7 +120,7 @@ done
 test x"$bec" = "x" || sh -c "$bec"
 
 emerge -1q timezone-data
-emerge -qkj gentoo-sources genkernel \
+emerge -qkj ${sources:-gentoo-sources} genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd \
 	ntp nfs-utils acpid
