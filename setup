@@ -85,7 +85,7 @@ aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
 for i in $(get_fstype); do
 	case "$i" in
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
-			gkopts="$gkopts --luks"
+			gkopts="$gkopts --luks --menuconfig"
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			gkopts="$gkopts --lvm"
