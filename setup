@@ -72,16 +72,6 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-cat >>/etc/msmtprc <<EOF
-maildomain $FQDN
-host $DOMAIN
-domain $DOMAIN
-EOF
-
-cat >>/etc/fstab <<EOF
-$(get_uuid $BOOTPART /boot) noatime,noauto 1 2
-EOF
-
 aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
 # blkid is part of e2fsprogs and should be in system
 for i in $(get_fstype); do
@@ -128,13 +118,21 @@ emerge -q ${sources:-gentoo-sources} genkernel \
 	msmtp vixie-cron syslog-ng dhcpcd \
 	ntp nfs-utils acpid
 
+cat >>/etc/msmtprc <<EOF
+maildomain $FQDN
+host $DOMAIN
+domain $DOMAIN
+EOF
+
+cat >>/etc/fstab <<EOF
+$(get_uuid $BOOTPART /boot) noatime,noauto 1 2
+$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
+EOF
+
 test x"$aec" = "x" || sh -c "$aec"
 
 genkernel $gkopts "$@" all
 grub2-install /dev/sda
-cat >>/etc/fstab <<EOF
-$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
-EOF
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 eselect news read
