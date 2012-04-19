@@ -120,7 +120,9 @@ done
 
 test x"$bec" = "x" || sh -c "$bec"
 
-emerge -1q timezone-data
+test	"$(sha256sum /etc/localtime              | awk '{print $1}')" = \
+	"$(sha256sum /usr/share/zoneinfo/Factory | awk '{print $1}')"   \
+		&& emerge -1q timezone-data
 emerge -q ${sources:-gentoo-sources} genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd \
