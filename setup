@@ -17,10 +17,10 @@ while test "${#@}" -gt 0; do
 	case "$1" in
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
-		bec="$bec emerge -qje system;"
+		bec="$bec emerge -qe system;"
 		shift
 		;;
-	-2)	bec="emerge -qje system;"
+	-2)	bec="emerge -qe system;"
 		shift
 		;;
 	# Set profile to hardened
@@ -120,7 +120,7 @@ done
 test x"$bec" = "x" || sh -c "$bec"
 
 emerge -1q timezone-data
-emerge -qkj ${sources:-gentoo-sources} genkernel \
+emerge -q ${sources:-gentoo-sources} genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd \
 	ntp nfs-utils acpid
