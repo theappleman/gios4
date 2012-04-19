@@ -11,6 +11,7 @@ get_fstype() {
 }
 
 # This will fail if /usr/portage has not been prepared
+test !-d /usr/portage || (echo /usr/portage not found. Quitting.>&2;exit)
 env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
