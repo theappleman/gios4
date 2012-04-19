@@ -72,7 +72,7 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
+aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config;"
 # blkid is part of e2fsprogs and should be in system
 for i in $(get_fstype); do
 	case "$i" in
@@ -90,7 +90,7 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		# as part of this overlay, btrfs-progs is unmasked
-		aec="$aec echo CONFIG_BTRFS_FS=y >>/usr/share/genkernel/arch/$(uname -m)/kernel-config;"
+		aec="$aec echo CONFIG_BTRFS_FS=y >>/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config;"
 		# btrfs needs to be enabled in the kernel
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
