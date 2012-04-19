@@ -25,7 +25,7 @@ while test "${#@}" -gt 0; do
 		;;
 	# Set profile to hardened
 	-h)	shift
-		bec="eselect profile set hardened/linux/$(uname -m | sed s/amd/x86_/);"
+		bec="eselect profile set hardened/linux/$(uname -m | sed 's/amd/x86_/;s/i6/x/');"
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
