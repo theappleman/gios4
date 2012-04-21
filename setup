@@ -42,6 +42,12 @@ while test "${#@}" -gt 0; do
 	-i)	aac="$aac /bin/sh"
 		PS1="(chroot) $PS1"
 		;;
+	# install the xen hypervisor
+	# this is incompatible with the hardened profile
+	-x)	bec="$bec eselect python set 1" #XXX: this doesn't guarantee py2
+		extraprogs="$extraprogs xen"
+		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
+		;;
 	--)	break
 		;;
 	*)	if test x"$FQDN" = "x"; then
