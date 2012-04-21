@@ -4,7 +4,11 @@ set -e
 extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2"
 
 get_uuid() {
-	blkid | grep $1 | awk -F\" "{ print \"UUID=\\\"\" \$2 \"\\\"\", \"$2\", \$(NF-1) }"
+	test "$1" || return
+	blkid | awk -F\" "/$(echo $1 | sed 's!/!.!g;q')/" \
+	"{ for (n=1; n<=NF; n++) { if (\$n ~ / UUID=/) { break } }
+	if ($n !~ / UUID=/) { exit }
+	print \"UUID=\\\"\" \$(n+1) \"\\\"\", \"$2\", \$(NF-1) }"
 }
 
 get_fstype() {
