@@ -10,6 +10,13 @@ get_fstype() {
 	blkid | awk -F\" '{ print $(NF-1) }' | sort -u
 }
 
+ckc() {
+	config=/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config
+	if ! egrep -q "^CONFIG_$1=[ym]"; then
+		echo echo "CONFIG_$1=y" '>>' $config
+	fi
+}
+
 # This will fail if /usr/portage has not been prepared
 test !-d /usr/portage || (echo /usr/portage not found. Quitting.>&2;exit)
 env-update >/dev/null && source /etc/profile
@@ -69,8 +76,8 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-aec="echo CONFIG_RTC >>/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config;"
 # blkid is part of e2fsprogs and should be in system
+aec="$aec $(ckc RTC);"
 for i in $(get_fstype); do
 	case "$i" in
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
@@ -97,7 +104,7 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		# as part of this overlay, btrfs-progs is unmasked
-		aec="$aec echo CONFIG_BTRFS_FS=y >>/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config;"
+		aec="$aec $(ckc BTRFS_FS);"
 		# btrfs needs to be enabled in the kernel
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
