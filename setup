@@ -143,8 +143,8 @@ test x"$bec" = "x" || sh -c "$bec"
 test	"$(sha256sum /etc/localtime              | awk '{print $1}')" = \
 	"$(sha256sum /usr/share/zoneinfo/Factory | awk '{print $1}')"   \
 		&& emerge -1q timezone-data
-emerge -q ${sources=gentoo-sources} ${sources-genkernel} \
-	${sources-grub:2} $fsprogs \
+emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
+	${sources:+grub:2} $fsprogs \
 	$extraprogs
 
 cat >>/etc/msmtprc <<EOF
