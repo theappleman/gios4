@@ -12,6 +12,7 @@ get_fstype() {
 }
 
 ckc() {
+	test "$sources" || (echo :; return)
 	config=/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config
 	if ! egrep -q "^CONFIG_$1=[ym]"; then
 		echo echo "CONFIG_$1=y" '>>' $config
@@ -47,6 +48,9 @@ while test "${#@}" -gt 0; do
 	-x)	bec="$bec eselect python set 1" #XXX: this doesn't guarantee py2
 		extraprogs="$extraprogs xen"
 		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
+		;;
+	# do not install a kernel source package
+	-c)	sources=
 		;;
 	--)	break
 		;;
@@ -139,8 +143,8 @@ test x"$bec" = "x" || sh -c "$bec"
 test	"$(sha256sum /etc/localtime              | awk '{print $1}')" = \
 	"$(sha256sum /usr/share/zoneinfo/Factory | awk '{print $1}')"   \
 		&& emerge -1q timezone-data
-emerge -q ${sources:-gentoo-sources} genkernel \
-	grub:2 $fsprogs \
+emerge -q ${sources=gentoo-sources} ${sources-genkernel} \
+	${sources-grub:2} $fsprogs \
 	$extraprogs
 
 cat >>/etc/msmtprc <<EOF
@@ -156,9 +160,11 @@ EOF
 
 test x"$aec" = "x" || sh -c "$aec"
 
-genkernel $gkopts "$@" all
-grub2-install /dev/sda
-grub2-mkconfig -o /boot/grub2/grub.cfg
+if test "$sources"; then
+	genkernel $gkopts "$@" all
+	grub2-install /dev/sda
+	grub2-mkconfig -o /boot/grub2/grub.cfg
+fi
 
 eselect news read
 
