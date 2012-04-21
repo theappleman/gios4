@@ -131,7 +131,7 @@ test	"$(sha256sum /etc/localtime              | awk '{print $1}')" = \
 emerge -q ${sources:-gentoo-sources} genkernel \
 	grub:2 $fsprogs \
 	msmtp vixie-cron syslog-ng dhcpcd \
-	ntp nfs-utils acpid
+	ntp nfs-utils acpid iproute2
 
 cat >>/etc/msmtprc <<EOF
 maildomain $FQDN
