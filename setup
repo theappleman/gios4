@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2"
 
 get_uuid() {
 	blkid | grep $1 | awk -F\" "{ print \"UUID=\\\"\" \$2 \"\\\"\", \"$2\", \$(NF-1) }"
@@ -134,8 +135,7 @@ test	"$(sha256sum /etc/localtime              | awk '{print $1}')" = \
 		&& emerge -1q timezone-data
 emerge -q ${sources:-gentoo-sources} genkernel \
 	grub:2 $fsprogs \
-	msmtp vixie-cron syslog-ng dhcpcd \
-	ntp nfs-utils acpid iproute2
+	$extraprogs
 
 cat >>/etc/msmtprc <<EOF
 maildomain $FQDN
