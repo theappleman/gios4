@@ -19,14 +19,11 @@ while test "${#@}" -gt 0; do
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
 		bec="$bec emerge -qe system;"
-		shift
 		;;
 	-2)	bec="emerge -qe system;"
-		shift
 		;;
 	# Set profile to hardened
-	-h)	shift
-		bec="eselect profile set hardened/linux/$(uname -m | sed 's/amd/x86_/;s/i6/x/');"
+	-h)	bec="eselect profile set hardened/linux/$(uname -m | sed 's/amd/x86_/;s/i6/x/');"
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
@@ -36,8 +33,8 @@ while test "${#@}" -gt 0; do
 	# open a chrooted shell after installation
 	-i)	aac="$aac /bin/sh"
 		PS1="(chroot) $PS1"
-		shift ;;
-	--)	shift; break
+		;;
+	--)	break
 		;;
 	*)	if test x"$FQDN" = "x"; then
 			FQDN=$1
@@ -46,9 +43,9 @@ while test "${#@}" -gt 0; do
 		else
 			break
 		fi
-		shift
 		;;
 	esac
+	shift
 done
 
 test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
