@@ -16,11 +16,13 @@ get_fstype() {
 }
 
 ckc() {
-	test "$sources" || (echo :; return)
-	config=/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config
-	if ! egrep -q "^CONFIG_$1=[ym]" $config; then
-		echo echo "CONFIG_$1=y" '>>' $config
+	if test -z "$sources"; then
+		echo :
+		return
 	fi
+	config="/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config"
+	echo "if ! egrep -q \"^CONFIG_$1=[ym]\"" $config ';then;'
+	echo "echo \"CONFIG_$1=y\"" \>\> $config ';fi'
 }
 
 # This will fail if /usr/portage has not been prepared
