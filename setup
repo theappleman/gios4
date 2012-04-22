@@ -24,7 +24,7 @@ ckc() {
 }
 
 # This will fail if /usr/portage has not been prepared
-test ! -d /usr/portage || (echo /usr/portage not found. Quitting.>&2; exit 1)
+test -d /usr/portage || (echo /usr/portage not found. Quitting.>&2; exit 1)
 env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
