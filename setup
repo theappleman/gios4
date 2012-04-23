@@ -97,6 +97,11 @@ EOF
 aec="$aec $(ckc RTC);"
 for i in $(get_fstype); do
 	case "$i" in
+	linux_raid_member)	fsprogs="$fsprogs mdadm"
+				gkopts="$gkopts --mdadm"
+				aec="$aec rc-update add mdraid boot;"
+				g2cli="$g2cli domdadm"
+				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			gkopts="$gkopts --luks --menuconfig"
 			packageuse=/etc/portage/package.use
@@ -131,10 +136,6 @@ for i in $(get_fstype); do
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
 			;;
 	jfs)	fsprogs="$fsprogs jfsutils"
-		;;
-	*raid*)	fsprogs="$fsprogs mdadm"
-		gkopts="$gkopts --mdadm"
-		aec="$aec rc-update add mdraid boot;"
 		;;
 	fat*)	fsprogs="$fsprogs dosfstools"
 		;;
