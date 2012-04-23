@@ -5,8 +5,8 @@ extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2"
 
 get_uuid() {
 	test "$1" || return
-	blkid | awk -F\" "/$(echo $1 | sed 's!/!.!g;q')/" \
-	"{ for (n=1; n<=NF; n++) { if (\$n ~ / UUID=/) { break } }
+	blkid | awk -F\" -e "/$(echo $1 | sed 's!/!.!g;q')/
+	{ for (n=1; n<=NF; n++) { if (\$n ~ / UUID=/) { break } }
 	if (\$n !~ / UUID=/) { exit }
 	print \"UUID=\\\"\" \$(n+1) \"\\\"\", \"$2\", \$(NF-1) }"
 }
