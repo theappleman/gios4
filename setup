@@ -176,6 +176,7 @@ if test "$sources"; then
 	EOF
 	genkernel $gkopts "$@" all
 	#grub2-install $(grub2-probe -t device / | egrep -o '/dev/[a-z]+')
+	test -d /boot/grub2 || mkdir -p /boot/grub2
 	grub2-mkconfig -o /boot/grub2/grub.cfg
 fi
 
