@@ -168,7 +168,7 @@ test x"$aec" = "x" || sh -c "$aec"
 
 if test "$sources"; then
 	genkernel $gkopts "$@" all
-	grub2-install /dev/sda
+	#grub2-install $(grub2-probe -t device / | egrep -o '/dev/[a-z]+')
 	grub2-mkconfig -o /boot/grub2/grub.cfg
 fi
 
