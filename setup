@@ -118,6 +118,7 @@ for i in $(get_fstype); do
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			gkopts="$gkopts --lvm"
 			aec="$aec rc-update add lvm boot;"
+			g2cli="$g2cli dolvm"
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		# as part of this overlay, btrfs-progs is unmasked
@@ -167,6 +168,11 @@ EOF
 test x"$aec" = "x" || sh -c "$aec"
 
 if test "$sources"; then
+	cat >/etc/default/grub<<-EOF
+	GRUB_DISTRIBUTOR="Gentoo"
+	GRUB_TIMEOUT=10
+	GRUB_CMDLINE_LINUX="$g2cli"
+	EOF
 	genkernel $gkopts "$@" all
 	#grub2-install $(grub2-probe -t device / | egrep -o '/dev/[a-z]+')
 	grub2-mkconfig -o /boot/grub2/grub.cfg
