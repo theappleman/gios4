@@ -51,7 +51,7 @@ while test "${#@}" -gt 0; do
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
-	-x)	bec="$bec eselect python set 1" #XXX: this doesn't guarantee py2
+	-x)	bec="eselect python set $(eselect python list --python2 | awk '/py/{ print $2 }')"
 		extraprogs="$extraprogs xen"
 		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
 		;;
