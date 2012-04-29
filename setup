@@ -16,7 +16,7 @@ get_fstype() {
 }
 
 ckc() {
-	if test -z "$sources"; then
+	if test -z "${sources=gentoo-sources}"; then
 		echo :
 		return
 	fi
