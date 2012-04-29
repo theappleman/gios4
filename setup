@@ -163,12 +163,14 @@ EOF
 
 cat >>/etc/fstab <<EOF
 $(get_uuid $BOOTPART /boot) noatime,noauto 1 2
-$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
 EOF
 
 test x"$aec" = "x" || sh -c "$aec"
 
 if test "$sources"; then
+	cat >>/etc/fstab <<-EOF
+	$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
+	EOF
 	cat >/etc/default/grub<<-EOF
 	GRUB_DISTRIBUTOR="Gentoo"
 	GRUB_TIMEOUT=10
