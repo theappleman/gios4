@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop iptables"
+extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop"
 
 get_uuid() {
 	test "$1" || return
