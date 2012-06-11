@@ -148,7 +148,7 @@ done
 
 test x"$bec" = "x" || sh -c "$bec"
 
-cmp /etc/localtime /usr/share/zoneinfo/Factory || \
+cmp -q /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} $fsprogs \
