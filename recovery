@@ -2,16 +2,20 @@
 
 INSTDIR=$(dirname $0)
 
-mount -t proc proc $INSTDIR/proc
-mount --rbind /dev $INSTDIR/dev
-mount --rbind /sys $INSTDIR/sys
-
-test -f $INSTDIR/etc/resolv.conf || cp -L /etc/resolv.conf $INSTDIR/etc
-
-if test x"$1" = "xsetup"; then
-	shift
-	env -i TERM=$TERM SHELL=/bin/bash HOME=$HOME chroot $INSTDIR /setup "$@"
+if test x"$1" = "xchroot"; then
+	env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash chroot $INSTDIR /bin/bash
 else
-	echo "# chroot $INSTDIR /bin/bash"
+	mount -t proc proc $INSTDIR/proc
+	mount --rbind /dev $INSTDIR/dev
+	mount --rbind /sys $INSTDIR/sys
+
+	test -f $INSTDIR/etc/resolv.conf || cp -L /etc/resolv.conf $INSTDIR/etc
+
+	if test x"$1" = "xsetup"; then
+		shift
+		env -i TERM=$TERM SHELL=/bin/bash HOME=$HOME chroot $INSTDIR /setup "$@"
+	else
+		echo "# chroot $INSTDIR /bin/bash"
+	fi
 fi
 
