@@ -1,3 +1,4 @@
 echo -e '\a'
 
-ping -qc $(ip r | awk '/default/ { print $3 }') >/dev/null && echo -e '\a'
+gateway=$(/sbin/ip r | awk '/default/ { print $3 }' 2>/dev/null)
+test "$gateway" && ping -qc 1 $gateway >/dev/null && echo -e '\a'
