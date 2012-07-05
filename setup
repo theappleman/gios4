@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop"
+extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop gentoolkit"
 
 get_uuid() {
 	test "$1" || return
@@ -153,6 +153,17 @@ cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} $fsprogs \
 	$extraprogs
+
+egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner --reallyall || true
+egrep -q 'dev-lang/python' /var/log/emerge.log && python-updater || true
+if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
+	# This would probably only be needed when actually changing the
+	# version with gcc-config. However, do it anyway.
+	env-update
+	source /etc/profile
+	emerge -1q libtool
+	revdep-rebuild
+fi
 
 cat >>/etc/msmtprc <<EOF
 maildomain $FQDN
