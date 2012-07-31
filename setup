@@ -6,9 +6,9 @@ extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop 
 get_uuid() {
 	test "$1" || return
 	/sbin/blkid | awk -F\" -e 'OFS=""' -e "/$(echo $1 | tr / .)/"'
-	{for(n=1;n<=NF;n++){if($n~/ UUID=/){n++;break}}
+	{for(n=1;n<=NF;n++){if($n~/ UUID=/){break}}
 	if ($n!~/ UUID=/){exit}
-	print "UUID=\", $n, "\" '"$2"' ", $(NF-1)}'
+	print "UUID=\", $(n+1), "\" '"$2"' ", $(NF-1)}'
 }
 
 get_fstype() {
@@ -38,7 +38,7 @@ while test "${#@}" -gt 0; do
 	-2)	bec="emerge -qe system;"
 		;;
 	# Set profile to hardened
-	-h)	bec="eselect profile set hardened/linux/$(uname -m | sed 's/amd/x86_/;s/i6/x/');"
+	-h)	bec="eselect profile set hardened/linux/$(uname -m | sed 's/x86_/amd/;s/i6/x/');"
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
@@ -151,7 +151,7 @@ test x"$bec" = "x" || sh -c "$bec"
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
-	${sources:+grub:2} $fsprogs \
+	${sources:+grub:2} ${sources:+dracut} $fsprogs \
 	$extraprogs
 
 egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner --reallyall || true
@@ -159,10 +159,10 @@ egrep -q 'dev-lang/python' /var/log/emerge.log && python-updater || true
 if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	# This would probably only be needed when actually changing the
 	# version with gcc-config. However, do it anyway.
-	env-update
-	source /etc/profile
+	env-update && source /etc/profile
 	emerge -1q libtool
-	revdep-rebuild
+	revdep-rebuild.py -- --usepkg no --quiet
+	revdep-rebuild.sh -- --usepkg no --quiet
 fi
 
 cat >>/etc/msmtprc <<EOF
@@ -181,9 +181,9 @@ if test "$sources"; then
 	cat >/etc/default/grub<<-EOF
 	GRUB_DISTRIBUTOR="Gentoo"
 	GRUB_TIMEOUT=10
-	GRUB_CMDLINE_LINUX="$g2cli"
 	EOF
-	genkernel $gkopts "$@" kernel
+	#GRUB_CMDLINE_LINUX="$g2cli"
+	genkernel kernel #$gkopts "$@"
 	aac="$aac; echo \"don't forget:\""
 	aac="$aac; echo -e \"\tgrub2-install $(grub2-probe -t device /)\""
 	aac="$aac; echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null)"
