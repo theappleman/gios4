@@ -183,10 +183,11 @@ if test "$sources"; then
 	GRUB_TIMEOUT=10
 	GRUB_CMDLINE_LINUX="$g2cli"
 	EOF
-	genkernel $gkopts "$@" all
-	#grub2-install $(grub2-probe -t device / | egrep -o '/dev/[a-z]+')
-	test -d /boot/grub2 || mkdir -p /boot/grub2
-	grub2-mkconfig -o /boot/grub2/grub.cfg
+	genkernel $gkopts "$@" kernel
+	aac="$aac; echo \"don't forget:\""
+	aac="$aac; echo -e \"\tgrub2-install $(grub2-probe -t device /)\""
+	aac="$aac; echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null)"
+	aac="$aac; echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\""
 fi
 
 eselect news read
