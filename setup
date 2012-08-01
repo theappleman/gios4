@@ -45,10 +45,6 @@ while test "${#@}" -gt 0; do
 		sources="hardened-sources"
 		#bec="$bec emerge -qje system;"
 		;;
-	# open a chrooted shell after installation
-	-i)	aac="$aac /bin/sh"
-		PS1="(chroot) $PS1"
-		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
 	-x)	bec="eselect python set $(eselect python list --python2 | awk '/py/{ print $2 }'); python-updater"
