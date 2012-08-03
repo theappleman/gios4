@@ -25,6 +25,8 @@ ckc() {
 	echo "echo \"CONFIG_$1=y\"" \>\> $config ';fi'
 }
 
+packageuse=/etc/portage/package.use
+
 # This will fail if /usr/portage has not been prepared
 test -d /usr/portage || (echo /usr/portage not found. Quitting.>&2; exit 1)
 env-update >/dev/null && source /etc/profile
@@ -101,7 +103,6 @@ for i in $(get_fstype); do
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
-			packageuse=/etc/portage/package.use
 			if test -f $packageuse; then
 				cat >>$packageuse<<-EOF
 				dev-libs/popt static-libs
@@ -153,6 +154,13 @@ DRACUT_MODULES=\"$dracutopts\"
 ;q}" -e '$a'"
 DRACUT_MODULES=\"$dracutopts\"
 " /etc/make.conf
+
+if test x"$sources" != "x" && egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf; then
+	test -f $packageuse && \
+		echo sys-kernel/dracut device-mapper >> $packageuse
+	test -d $packageuse && \
+		echo sys-kernel/dracut device-mapper >> $packageuse/sys-kernel
+fi
 
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
