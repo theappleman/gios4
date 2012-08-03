@@ -10,6 +10,11 @@ if test x"$1" = "xchroot"; then
 elif test x"$1" = "xsetup"; then
 	shift
 	$chrootcmd /setup "$@"
+elif test x"$1" = "xfetch"; then
+	arch=$(uname -m | sed 's/x86_/amd/')
+	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3.txt | sed '$!d')
+	basepath=$(basename $getpath)
+	wget http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
 else
 	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
