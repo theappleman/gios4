@@ -148,9 +148,11 @@ test x"$bec" = "x" || sh -c "$bec"
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
-test "$dracutopts" && cat >>/etc/make.conf<<EOF
-DRACUT_MODULES="$dracutopts"
-EOF
+test "$dracutopts" && sed -i -e '/DRACUT_MODULES/{c'"
+DRACUT_MODULES=\"$dracutopts\"
+;q}" -e '$a'"
+DRACUT_MODULES=\"$dracutopts\"
+"
 
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
