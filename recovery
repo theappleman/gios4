@@ -19,6 +19,17 @@ elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
 	$chrootcmd /usr/bin/emerge-webrsync
+elif test x"$1" = "xhelp"; then
+	echo "$0 [prepares mountpoints]"
+	echo "$0 setup <...>"
+	echo "$0 chroot"
+	echo
+	echo "$0 fetch <mirror>"
+	#echo "$0 unpack"
+	#echo "$0 pull"
+	echo
+	echo "$0 sync"
+	echo "$0 web-sync"
 else
 	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
