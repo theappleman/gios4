@@ -96,12 +96,11 @@ aec="$aec $(ckc RTC);"
 for i in $(get_fstype); do
 	case "$i" in
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
-				gkopts="$gkopts --mdadm"
+				dracutopts="$dracutopts mdraid"
 				aec="$aec rc-update add mdraid boot;"
-				g2cli="$g2cli domdadm"
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
-			gkopts="$gkopts --luks --menuconfig"
+			dracutopts="$dracutopts crypt"
 			packageuse=/etc/portage/package.use
 			if test -f $packageuse; then
 				cat >>$packageuse<<-EOF
@@ -119,11 +118,11 @@ for i in $(get_fstype); do
 			fi
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
-			gkopts="$gkopts --lvm"
+			dracutopts="$dracutopts lvm"
 			aec="$aec rc-update add lvm boot;"
-			g2cli="$g2cli dolvm"
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
+		dracutopts="$dracutopts btrfs"
 		# as part of this overlay, btrfs-progs is unmasked
 		aec="$aec $(ckc BTRFS_FS);"
 		# btrfs needs to be enabled in the kernel
@@ -148,6 +147,11 @@ test x"$bec" = "x" || sh -c "$bec"
 
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
+
+test "$dracutopts" && cat >>/etc/make.conf<<EOF
+DRACUT_MODULES="$dracutopts"
+EOF
+
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
 	$extraprogs
@@ -180,8 +184,7 @@ if test "$sources"; then
 	GRUB_DISTRIBUTOR="Gentoo"
 	GRUB_TIMEOUT=10
 	EOF
-	#GRUB_CMDLINE_LINUX="$g2cli"
-	genkernel kernel #$gkopts "$@"
+	genkernel kernel
 	aac="$aac; echo \"don't forget:\""
 	aac="$aac; echo -e \"\tgrub2-install $(grub2-probe -t device /)\""
 	aac="$aac; echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null)"
