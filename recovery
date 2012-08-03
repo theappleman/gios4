@@ -15,6 +15,10 @@ elif test x"$1" = "xfetch"; then
 	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3.txt | sed '$!d')
 	basepath=$(basename $getpath)
 	wget http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
+elif test x"$1" = "xsync"; then
+	$chrootcmd /usr/bin/emerge --sync
+elif test x"$1" = "xweb-sync"; then
+	$chrootcmd /usr/bin/emerge-webrsync
 else
 	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
