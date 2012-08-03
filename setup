@@ -169,8 +169,8 @@ emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner --reallyall || true
 egrep -q 'dev-lang/python' /var/log/emerge.log && python-updater || true
 if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
-	# This would probably only be needed when actually changing the
-	# version with gcc-config. However, do it anyway.
+	ccpro=$(gcc-config -l | awk 'END{print $2}')
+	test "$ccpro" && test "$(gcc-config -c)" != "$ccpro" && gcc-config $ccpro
 	env-update && source /etc/profile
 	emerge -1q libtool
 	revdep-rebuild.py -- --usepkg no --quiet
