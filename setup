@@ -149,11 +149,9 @@ test x"$bec" = "x" || sh -c "$bec"
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
-test "$dracutopts" && sed -i -e '/DRACUT_MODULES/{c'"
-DRACUT_MODULES=\"$dracutopts\"
-;q}" -e '$a'"
-DRACUT_MODULES=\"$dracutopts\"
-" /etc/make.conf
+test "$dracutopts" && \
+	sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
+q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
 
 if test x"$sources" != "x" && egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf; then
 	test -f $packageuse && \
