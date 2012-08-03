@@ -8,7 +8,7 @@ get_uuid() {
 	/sbin/blkid | awk -F\" -e 'OFS=""' -e "/$(echo $1 | tr / .)/"'
 	{for(n=1;n<=NF;n++){if($n~/ UUID=/){break}}
 	if ($n!~/ UUID=/){exit}
-	print "UUID=\", $(n+1), "\" '"$2"' ", $(NF-1)}'
+	print "UUID=\"", $(n+1), "\" '"$2"' ", $(NF-1)}'
 }
 
 get_fstype() {
