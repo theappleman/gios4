@@ -2,13 +2,14 @@
 
 INSTDIR="$(dirname $0)"
 chroot=$(which chroot)
+chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
 
 if test x"$1" = "xchroot"; then
 	echo "# source /etc/profile"
-	env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot "$INSTDIR" /bin/bash
+	$chrootcmd /bin/bash
 elif test x"$1" = "xsetup"; then
 	shift
-	env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot "$INSTDIR" /setup "$@"
+	$chrootcmd /setup "$@"
 else
 	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
@@ -16,6 +17,6 @@ else
 
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 
-	echo "# chroot $INSTDIR /bin/bash"
+	echo "# $chrootcmd /bin/bash"
 fi
 
