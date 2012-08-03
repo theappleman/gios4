@@ -73,6 +73,8 @@ while test "${#@}" -gt 0; do
 done
 
 test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
+
+test "${sources=gentoo-sources}" && \
 test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
 passwd
