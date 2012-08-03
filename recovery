@@ -10,11 +10,12 @@ if test x"$1" = "xchroot"; then
 elif test x"$1" = "xsetup"; then
 	shift
 	$chrootcmd /setup "$@"
-elif test x"$1" = "xfetch"; then
+elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	arch=$(uname -m | sed 's/x86_/amd/')
 	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3.txt | sed '$!d')
 	basepath=$(basename $getpath)
-	wget http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
+	test x"$1" = "xunpack" && unpack=" -O- | tar xjpf - -C $INSTDIR"
+	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath $unpack
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
@@ -25,8 +26,7 @@ elif test x"$1" = "xhelp"; then
 	echo -e "$0 chroot\t\tchroot into your environment"
 	echo
 	echo -e "$0 fetch <mirror>\tfetch latest stage3 tarball"
-	#echo "$0 unpack"
-	#echo "$0 pull"
+	echo -e "$0 unpack <mirror>\tfetch and unpack stage3"
 	echo
 	echo -e "$0 sync\t\t\tsync portage tree in the chroot"
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
