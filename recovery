@@ -14,8 +14,8 @@ elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	arch=$(uname -m | sed 's/x86_/amd/')
 	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3.txt | sed '$!d')
 	basepath=$(basename $getpath)
-	test x"$1" = "xunpack" && unpack=" -O- | tar xkjpf - -C $INSTDIR"
-	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath $unpack
+	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
+	test x"$1" = "xunpack" && tar xkjpf $basepath -C $INSTDIR
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
