@@ -96,7 +96,7 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-aec="$aec $(ckc RTC); $(ckc B43 n); $(ckc DEVTMPFS)"
+aec="$aec $(ckc RTC); $(ckc B43 n); $(ckc DEVTMPFS);"
 for i in $(get_fstype); do
 	case "$i" in
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
