@@ -22,8 +22,14 @@ elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
 	$chrootcmd /usr/bin/emerge-webrsync
-elif test x"$1" = "xhelp"; then
-	echo -e "$0\t\t\tprepare required mountpoints"
+elif test x"$1" = "xprepare"; then
+	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
+	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
+	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
+
+	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
+else
+	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 setup <...>\t\trun the setup program"
 	echo -e "$0 chroot\t\tchroot into your environment"
 	echo
@@ -32,10 +38,5 @@ elif test x"$1" = "xhelp"; then
 	echo
 	echo -e "$0 sync\t\t\tsync portage tree in the chroot"
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
-else
-	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
-	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
-	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
 
-	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 fi
