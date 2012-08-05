@@ -5,6 +5,7 @@ extraprogs="msmtp vixie-cron syslog-ng dhcpcd ntp nfs-utils acpid iproute2 htop 
 
 get_uuid() {
 	test "$1" || return
+	test "$2" || return
 	/sbin/blkid | awk -F\" -e 'OFS=""' -e "/$(echo $1 | tr / .)/"'
 	{for(n=1;n<=NF;n++){if($n~/ UUID=/){break}}
 	if ($n!~/ UUID=/){exit}
