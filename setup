@@ -96,7 +96,6 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-# blkid is part of e2fsprogs and should be in system
 aec="$aec $(ckc RTC); $(ckc B43 n)"
 for i in $(get_fstype); do
 	case "$i" in
