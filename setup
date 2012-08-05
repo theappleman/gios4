@@ -22,7 +22,7 @@ ckc() {
 		return
 	fi
 	config="/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config"
-	echo "sed -i -e '/^CONFIG_$1=/{s/=.*/=${2:-y};q};\$a\
+	echo "sed -i -e '/^CONFIG_$1=/{s/=.*/=${2:-y}/;q};\$a\
 	CONFIG_$1=${2:-y}' $config"
 }
 
