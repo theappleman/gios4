@@ -190,14 +190,10 @@ if test "$sources"; then
 	$(get_uuid $BOOTPART /boot) noatime,noauto 1 2
 	$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
 	EOF
-	cat >/etc/default/grub<<-EOF
-	GRUB_DISTRIBUTOR="Gentoo"
-	GRUB_TIMEOUT=10
-	EOF
 	genkernel kernel
 	aac="$aac echo \"don't forget:\";"
-	aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t device /)\";"
-	aac="$aac echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null);"
+	aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1')\";"
+	aac="$aac echo -e \"\tdracut\" -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
 	aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
 fi
 
