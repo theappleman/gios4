@@ -195,10 +195,10 @@ if test "$sources"; then
 	GRUB_TIMEOUT=10
 	EOF
 	genkernel kernel
-	aac="$aac; echo \"don't forget:\""
-	aac="$aac; echo -e \"\tgrub2-install $(grub2-probe -t device /)\""
-	aac="$aac; echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null)"
-	aac="$aac; echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\""
+	aac="$aac echo \"don't forget:\";"
+	aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t device /)\";"
+	aac="$aac echo -e \"\tdracut\" $(ls /lib/modules/ 2>/dev/null);"
+	aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
 fi
 
 eselect news read
