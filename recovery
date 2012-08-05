@@ -38,7 +38,4 @@ else
 	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
 
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
-
-	echo "# $chrootcmd /bin/bash"
 fi
-
