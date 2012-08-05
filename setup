@@ -78,7 +78,7 @@ test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
 test "${sources=gentoo-sources}" && \
 test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
-passwd
+egrep -q -o '^root:\*:' /etc/shadow && passwd
 
 HOSTNAME="$(echo $FQDN | awk -F. '{print $1}')"
 # The following awk script could be simplified to:
