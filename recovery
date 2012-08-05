@@ -11,11 +11,13 @@ elif test x"$1" = "xsetup"; then
 	shift
 	$chrootcmd /setup "$@"
 elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
+	pushd "$INSTDIR"
 	arch=$(uname -m | sed 's/x86_/amd/')
 	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3.txt | sed '$!d')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
 	test x"$1" = "xunpack" && tar xkjpf $basepath -C $INSTDIR
+	popd
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
