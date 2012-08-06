@@ -165,6 +165,15 @@ if test x"$sources" != "x" && egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf;
 	fi
 fi
 
+if test x"$sources" != "x" && egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf; then
+	if test -f $packageuse; then
+		echo sys-kernel/dracut net >> $packageuse
+	else
+		test !-d $packageuse && mkdir $packageuse
+		echo sys-kernel/dracut net >> $packageuse/sys-kernel
+	fi
+fi
+
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
 	$extraprogs
