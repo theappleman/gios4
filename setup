@@ -27,7 +27,21 @@ ckc() {
 	echo "sed -i -e '/^CONFIG_$1=/d;\$aCONFIG_$1=${2:-y}' $config"
 }
 
-packageuse=/etc/portage/package.use
+use() {
+	packageuse=/etc/portage/package.use
+	test x"$1" = "x" && exit 3
+	test x"$@" = "x" && exit 4
+	category=$(dirname $1)
+	package=$(basename $1)
+
+	if test -f $packageuse; then
+		echo "$category/$package $@" >> $packageuse
+	else
+		test -d $packageuse || mkdir -p $packageuse
+		echo "$category/$package $@" >> $packageuse/$category
+	fi
+}
+
 
 # This will fail if /usr/portage has not been prepared
 test -d /usr/portage || (echo /usr/portage not found. Quitting.>&2; exit 1)
@@ -105,20 +119,10 @@ for i in $(get_fstype); do
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
-			if test -f $packageuse; then
-				cat >>$packageuse<<-EOF
-				dev-libs/popt static-libs
-				dev-libs/libgcrypt static-libs
-				dev-libs/libgpg-error static-libs
-				sys-apps/util-linux static-libs
-				EOF
-			else
-				test -d $packageuse || mkdir -p $packageuse
-				echo dev-libs/popt static-libs>>$packageuse/dev-libs
-				echo dev-libs/libgcrypt static-libs>>$packageuse/dev-libs
-				echo dev-libs/libgpg-error static-libs>>$packageuse/dev-libs
-				echo sys-apps/util-linux static-libs>>$packageuse/sys-apps
-			fi
+			use	dev-libs/popt		static-libs
+			use	dev-libs/libgcrypt	static-libs
+			use	dev-libs/libgpg-error	static-libs
+			use	sys-apps/util-linux	static-libs
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
@@ -146,34 +150,24 @@ for i in $(get_fstype); do
 	esac
 done
 
+if test x"$sources" != "x"; then
+	test "$dracutopts" && \
+		sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
+q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
+
+	egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf && \
+		dracutuse="$dracutuse device-mapper"
+	egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf && \
+		dracutuse="$dracutuse net"
+	test x"$dracutuse" != "x" && use sys-kernel/dracut "$dracutuse"
+fi
+
 test x"$bec" = "x" || sh -c "$bec"
 
 emerge -q1u portage
 
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
-
-test "$dracutopts" && \
-	sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
-q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
-
-if test x"$sources" != "x" && egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf; then
-	if test -f $packageuse; then
-		echo sys-kernel/dracut device-mapper >> $packageuse
-	else
-		test !-d $packageuse && mkdir $packageuse
-		echo sys-kernel/dracut device-mapper >> $packageuse/sys-kernel
-	fi
-fi
-
-if test x"$sources" != "x" && egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf; then
-	if test -f $packageuse; then
-		echo sys-kernel/dracut net >> $packageuse
-	else
-		test !-d $packageuse && mkdir $packageuse
-		echo sys-kernel/dracut net >> $packageuse/sys-kernel
-	fi
-fi
 
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
