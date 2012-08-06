@@ -124,6 +124,8 @@ for i in $(get_fstype); do
 			dracutopts="$dracutopts lvm"
 			aec="$aec rc-update add lvm boot;"
 			;;
+	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
+			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
 		# as part of this overlay, btrfs-progs is unmasked
@@ -133,8 +135,6 @@ for i in $(get_fstype); do
 	xfs)	fsprogs="$fsprogs xfsprogs"
 		;;
 	# XXX: the following are untested and need capitalisation checks
-	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
-			;;
 	jfs)	fsprogs="$fsprogs jfsutils"
 		;;
 	fat*)	fsprogs="$fsprogs dosfstools"
