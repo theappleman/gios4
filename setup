@@ -45,7 +45,7 @@ while test "${#@}" -gt 0; do
 			bec="$bec emerge -q1 $i;"
 		done
 		sources="hardened-sources"
-		#bec="$bec emerge -qje system;"
+		bec="$bec emerge -qe system;"
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
