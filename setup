@@ -51,8 +51,7 @@ while test "${#@}" -gt 0; do
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
-	-x)	#bec="eselect python set $(eselect python list --python2 | awk '/py/{ print $2 }'); python-updater"
-		echo 'app-emulation/xen-tools' >> /etc/portage/package.keywords
+	-x)	echo 'app-emulation/xen-tools' >> /etc/portage/package.keywords
 		echo 'app-emulation/xen' >> /etc/portage/package.keywords
 		extraprogs="$extraprogs xen"
 		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
