@@ -147,6 +147,8 @@ done
 
 test x"$bec" = "x" || sh -c "$bec"
 
+emerge -q1u portage
+
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
