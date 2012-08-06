@@ -49,11 +49,8 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
-	# do a stage1 install
-	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
-		bec="$bec emerge -qe system;"
-		;;
-	-2)	bec="emerge -qe system;"
+	# do not install a kernel source package
+	-c)	sources=
 		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
@@ -70,8 +67,11 @@ while test "${#@}" -gt 0; do
 		extraprogs="$extraprogs xen"
 		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
 		;;
-	# do not install a kernel source package
-	-c)	sources=
+	# do a stage1 install
+	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
+		bec="$bec emerge -qe system;"
+		;;
+	-2)	bec="emerge -qe system;"
 		;;
 	--)	break
 		;;
