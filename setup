@@ -157,10 +157,12 @@ test "$dracutopts" && \
 q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
 
 if test x"$sources" != "x" && egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf; then
-	test -f $packageuse && \
+	if test -f $packageuse; then
 		echo sys-kernel/dracut device-mapper >> $packageuse
-	test -d $packageuse && \
+	else
+		test !-d $packageuse && mkdir $packageuse
 		echo sys-kernel/dracut device-mapper >> $packageuse/sys-kernel
+	fi
 fi
 
 emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
