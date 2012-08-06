@@ -52,6 +52,10 @@ while test "${#@}" -gt 0; do
 	# do not install a kernel source package
 	-c)	sources=
 		;;
+	# Use autodetected settings and install grub
+	# May or may not work in all, or complex, setups
+	-g)	DOGRUB=YES
+		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
 		for i in gcc libtool binutils linux-headers glibc; do
@@ -199,10 +203,17 @@ if test "$sources"; then
 	EOF
 	grep MAKEOPTS /etc/make.conf >> /etc/genkernel.conf
 	genkernel kernel
-	aac="$aac echo \"don't forget:\";"
-	aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1')\";"
-	aac="$aac echo -e \"\tdracut\" -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
-	aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
+
+	if x"$DOGRUB" = "xYES"; then
+		aac="$aac grub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1');"
+		aac="$aac dracut -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
+		aac="$aac grub2-mkconfig -o /boot/grub2/grub.cfg;"
+	else
+		aac="$aac echo \"don't forget:\";"
+		aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1')\";"
+		aac="$aac echo -e \"\tdracut\" -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
+		aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
+	fi
 fi
 
 eselect news read
