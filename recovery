@@ -21,7 +21,14 @@ elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --sync
 elif test x"$1" = "xweb-sync"; then
-	$chrootcmd /usr/bin/emerge-webrsync
+	if test -x "$INSTDIR"/usr/bin/emerge-webrsync; then
+		$chrootcmd /usr/bin/emerge-webrsync
+	else
+		pushd "$INSTDIR"
+		wget -c http://${2:-distfiles.gentoo.org}/snapshots/portage-latest.tar.bz2
+		tar xf "$INSTDIR"/portage-latest.tar.bz2 -C "$INSTDIR"/usr
+		popd
+	fi
 elif test x"$1" = "xprepare"; then
 	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
