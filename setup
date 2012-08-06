@@ -3,6 +3,8 @@
 set -e
 extraprogs="acpid dhcpcd gentoolkit htop iproute2 msmtp nfs-utils ntp syslog-ng vixie-cron"
 
+arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
+
 get_uuid() {
 	test "$1" || exit 1
 	test "$2" || exit 2
@@ -40,7 +42,7 @@ while test "${#@}" -gt 0; do
 	-2)	bec="emerge -qe system;"
 		;;
 	# Set profile to hardened
-	-h)	bec="eselect profile set hardened/linux/$(uname -m | sed 's/x86_/amd/;s/i6/x/');"
+	-h)	bec="eselect profile set hardened/linux/$arch;"
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
