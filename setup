@@ -174,7 +174,7 @@ emerge -q1u portage
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
-emerge -q ${sources=gentoo-sources} ${sources:+genkernel} \
+emerge -qu ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
 	$extraprogs
 
