@@ -131,6 +131,7 @@ for i in $(get_fstype); do
 			dracutopts="$dracutopts lvm"
 			aec="$aec rc-update add lvm boot;"
 			dogrub=/boot
+			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
 			;;
