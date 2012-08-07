@@ -4,6 +4,7 @@ set -e
 extraprogs="acpid dhcpcd gentoolkit htop iproute2 msmtp nfs-utils ntp syslog-ng vixie-cron"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
+dogrub=/
 
 get_uuid() {
 	test "$1" || exit 1
@@ -51,10 +52,6 @@ while test "${#@}" -gt 0; do
 	case "$1" in
 	# do not install a kernel source package
 	-c)	sources=
-		;;
-	# Use autodetected settings and install grub
-	# May or may not work in all, or complex, setups
-	-g)	DOGRUB=YES
 		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
@@ -120,6 +117,7 @@ for i in $(get_fstype); do
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
 				aec="$aec rc-update add mdraid boot;"
+				dogrub=/boot
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
@@ -127,10 +125,12 @@ for i in $(get_fstype); do
 			use	dev-libs/libgcrypt	static-libs
 			use	dev-libs/libgpg-error	static-libs
 			use	sys-apps/util-linux	static-libs
+			dogrub=/boot
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
 			aec="$aec rc-update add lvm boot;"
+			dogrub=/boot
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
 			;;
@@ -203,15 +203,16 @@ if test "$sources"; then
 	EOF
 	grep MAKEOPTS /etc/make.conf >> /etc/genkernel.conf
 	genkernel kernel
+	dracut -q $(ls /boot/kernel-genkernel* | sed -n '/kernel/{s/kernel/initramfs/;p;q}') $(ls /lib/modules/ 2>/dev/null | sed q)
 
-	if x"$DOGRUB" = "xYES"; then
-		aac="$aac grub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1');"
-		aac="$aac dracut -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
+	test x"$dogrub" != "x" && \
+		bootdev=$(grub2-probe -t drive $dogrub | perl -ne 'm!/([^,]+)!;print $1')
+	if test -b "$bootdev"; then
+		aac="$aac grub2-install $bootdev;"
 		aac="$aac grub2-mkconfig -o /boot/grub2/grub.cfg;"
 	else
 		aac="$aac echo \"don't forget:\";"
-		aac="$aac echo -e \"\tgrub2-install $(grub2-probe -t drive / | perl -ne 'm!/([^,]+)!;print $1')\";"
-		aac="$aac echo -e \"\tdracut\" -q $(ls /boot/kernel-genkernel* | sed 's/kernel/initramfs/') $(ls /lib/modules/ 2>/dev/null);"
+		aac="$aac echo -e \"\tgrub2-install <...>\";"
 		aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
 	fi
 fi
