@@ -65,14 +65,18 @@ while test "${#@}" -gt 0; do
 	# this is incompatible with the hardened profile
 	-x)	#echo 'app-emulation/xen-tools' >> /etc/portage/package.keywords
 		#echo 'app-emulation/xen' >> /etc/portage/package.keywords
+		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
 		py2ver="$(eselect python list --python2 | awk 'END{ print $2 }')"
 		if test x"$py2ver" = "x"; then
-			emerge -q sys-lang/python:2.7
+			extraprogs="$extraprogs dev-lang/python:2.7"
 		fi
-		eselect python set $py2ver
-		python-updater
-		extraprogs="$extraprogs xen"
-		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
+		aec="$aec eselect python set python2.7;"
+		aac="$aac emerge -q xen;"
+		if test ! -d /run/lock; then
+			mkdir -p /run/lock
+			chown root:uucp /run/lock
+			chmod 775 /run/lock
+		fi
 		;;
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
@@ -184,6 +188,8 @@ emerge -qu ${sources=gentoo-sources} ${sources:+genkernel} \
 	${sources:+grub:2} ${sources:+dracut} $fsprogs \
 	$extraprogs
 
+test x"$aec" = "x" || sh -c "$aec"
+
 egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner --reallyall || true
 egrep -q 'dev-lang/python' /var/log/emerge.log && python-updater || true
 if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
@@ -200,8 +206,6 @@ maildomain $FQDN
 host $DOMAIN
 domain $DOMAIN
 EOF
-
-test x"$aec" = "x" || sh -c "$aec"
 
 if test "$sources"; then
 	cat >>/etc/fstab <<-EOF
