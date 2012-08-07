@@ -31,7 +31,7 @@ ckc() {
 use() {
 	packageuse=/etc/portage/package.use
 	test x"$1" = "x" && exit 3
-	test x"$@" = "x" && exit 4
+	test x"$2" = "x" && exit 4
 	category=$(dirname $1)
 	package=$(basename $1)
 
