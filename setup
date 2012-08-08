@@ -65,7 +65,7 @@ while test "${#@}" -gt 0; do
 	# this is incompatible with the hardened profile
 	-x)	#echo 'app-emulation/xen-tools' >> /etc/portage/package.keywords
 		#echo 'app-emulation/xen' >> /etc/portage/package.keywords
-		aec="$aec $(ckc PARAVIRT); $(ckc XEN);"
+		aec="$aec $(ckc PARAVIRT_GUEST); $(ckc XEN);"
 		py2ver="$(eselect python list --python2 | awk 'END{ print $2 }')"
 		if test x"$py2ver" = "x"; then
 			extraprogs="$extraprogs dev-lang/python:2.7"
