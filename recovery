@@ -41,7 +41,7 @@ elif test x"$1" = "xkeymap"; then
 	sed -i -e '/^keymap="us"$/s/s/k/' "$INSTDIR"/etc/conf.d/keymaps
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
-	echo -e "$0 setup <...>\t\trun the setup program"
+	echo -e "$0 setup <...>\trun the setup program"
 	echo -e "$0 chroot\t\tchroot into your environment"
 	echo
 	echo -e "$0 fetch <mirror>\tfetch latest stage3 tarball"
