@@ -37,6 +37,8 @@ elif test x"$1" = "xprepare"; then
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 elif test x"$1" = "xproxy"; then
 	env | grep proxy | tee "$INSTDIR"/etc/env.d/02proxy
+elif test x"$1" = "xkeymap"; then
+	sed -i -e '/^keymap="us"$/s/s/k/' "$INSTDIR"/etc/conf.d/keymaps
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 setup <...>\t\trun the setup program"
@@ -46,6 +48,7 @@ else
 	echo -e "$0 unpack <mirror>\tfetch and unpack stage3"
 	echo
 	echo -e "$0 proxy\t\tset proxy variables in the environment"
+	echo -e "$0 keymap\t\tset UK keymap in the environment"
 	echo
 	echo -e "$0 sync\t\t\tsync portage tree in the chroot"
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
