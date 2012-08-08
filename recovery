@@ -9,7 +9,7 @@ if test x"$1" = "xchroot"; then
 	$chrootcmd /bin/bash
 elif test x"$1" = "xsetup"; then
 	shift
-	$chrootcmd /setup "$@"
+	$chrootcmd /setup "$@" | tee "$INSTDIR"/install.log
 elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	pushd "$INSTDIR"
 	arch=$(uname -m | sed 's/x86_/amd/')
