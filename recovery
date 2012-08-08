@@ -19,7 +19,7 @@ elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	test x"$1" = "xunpack" && tar xkjpf $basepath -C $INSTDIR
 	popd
 elif test x"$1" = "xsync"; then
-	$chrootcmd /usr/bin/emerge --sync
+	$chrootcmd /usr/bin/emerge --quiet --sync
 elif test x"$1" = "xweb-sync"; then
 	if test -x "$INSTDIR"/usr/bin/emerge-webrsync; then
 		$chrootcmd /usr/bin/emerge-webrsync
