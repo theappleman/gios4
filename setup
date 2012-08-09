@@ -88,7 +88,7 @@ while test "${#@}" -gt 0; do
 		;;
 	*)	if test x"$FQDN" = "x"; then
 			FQDN=$1
-		elif test x"$BOOTPART" = "x"; then
+		elif test "${sources=gentoo-sources}" && test x"$BOOTPART" = "x"; then
 			BOOTPART=$1
 		else
 			break
@@ -101,7 +101,7 @@ done
 test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
 
 test "${sources=gentoo-sources}" && \
-test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
+	test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
 egrep -q '^root:\*:' /etc/shadow && passwd
 
