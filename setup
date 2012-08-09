@@ -91,7 +91,7 @@ while test "${#@}" -gt 0; do
 		elif test "${sources=gentoo-sources}" && test x"$BOOTPART" = "x"; then
 			BOOTPART=$1
 		else
-			break
+			extraprogs="$extraprogs $1"
 		fi
 		;;
 	esac
