@@ -35,6 +35,7 @@ elif test x"$1" = "xprepare"; then
 	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
 
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
+	$chrootcmd /usr/bin/env-update
 elif test x"$1" = "xproxy"; then
 	env | grep proxy | tee "$INSTDIR"/etc/env.d/02proxy
 elif test x"$1" = "xkeymap"; then
