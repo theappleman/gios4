@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-extraprogs="acpid dhcpcd gentoolkit htop iproute2 msmtp nfs-utils ntp syslog-ng vixie-cron"
+extraprogs="acpid dhcpcd iproute2 msmtp ntp syslog-ng vixie-cron"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 dogrub=/
@@ -197,8 +197,6 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	test "$ccpro" && test "$(gcc-config -c)" != "$ccpro" && gcc-config $ccpro
 	env-update && source /etc/profile
 	emerge -1q libtool
-	revdep-rebuild.py -- --usepkg no --quiet
-	revdep-rebuild.sh -- --usepkg no --quiet
 fi
 
 cat >>/etc/msmtprc <<EOF
