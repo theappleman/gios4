@@ -40,11 +40,21 @@ elif test x"$1" = "xproxy"; then
 	env | grep proxy | tee "$INSTDIR"/etc/env.d/02proxy
 elif test x"$1" = "xkeymap"; then
 	sed -i -e '/^keymap="us"$/s/s/k/' "$INSTDIR"/etc/conf.d/keymaps
-elif test x"$1" = "pre-gcc"; then
-	$chrootcmd emerge -1 gcc
-	$chrootcmd gcc-config $(gcc-config -l | awk 'END{print $2}')
-	$chrootcmd /usr/bin/env-update
-	$chrootcmd emerge -1 libtool
+elif test x"$1" = "xpre-gcc"; then
+	cat >"$INSTDIR"/pre-gcc <<-EOF
+	#!/bin/bash
+	set -e
+	/usr/sbin/env-update
+	source /etc/profile
+	emerge -1 gcc
+	gcc-config $(gcc-config -l | awk 'END{print $2}')
+	/usr/sbin/env-update
+	source /etc/profile
+	emerge -1 libtool
+	EOF
+	chmod +x "$INSTDIR"/pre-gcc
+	$chrootcmd /pre-gcc
+	rm "$INSTDIR"/pre-gcc
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 chroot\t\tchroot into your environment"
@@ -58,6 +68,8 @@ else
 	echo
 	echo -e "$0 sync\t\tsync portage tree in the chroot"
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
+	echo
+	echo -e "$0 pre-gcc\t\tupdate gcc"
 	echo
 	echo -e "$0 setup <...>\trun the setup program"
 fi
