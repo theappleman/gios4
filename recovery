@@ -61,17 +61,16 @@ elif test x"$1" = "xfstab"; then
 	get_uuid() {
 		test "$1" || exit 1
 		test "$2" || exit 2
-		/sbin/blkid | awk -F\" -e 'OFS=""' -e "/$(echo $1 | tr / .)/{"'
-		for(n=1;n<=NF;n++){if($n~/ UUID=/){break}}
-		if ($n!~/ UUID=/){exit}
-		print "UUID=\"", $(n+1), "\" '"$2"' ", $(NF-1)}'
+		/sbin/blkid | awk -F\" -e 'OFS=""' -e "/^$(echo $1 | tr / .):/{"'
+		for(n=1;n<=NF;n++){if($n~/UUID=/){break}}
+		if($n!~/UUID=/){exit}
+		print "UUID=\"",$(n+1),"\" '"$2"' ",$(NF-1);exit}'
 	}
 	INSTDOT="$(echo $INSTDIR | tr / .)"
 	IFS='
 ' fslist=$(mount)
 	for i in $fslist; do
-		fs=$(get_uuid $(echo $i | awk "/$INSTDOT./{\$3 ~ /$INSTDOT./{
-		sub(/$INSTDOT./,\"/\",3);print \$1, \$3}}"))
+		fs=$(get_uuid $(echo $i | awk '{print $1}') $(echo $i | awk "\$3 ~ /^$INSTDOT./{sub(/$INSTDOT./,\"/\",3);print \$3}"))
 		test x"$fs" != "x" && echo "$fs noatime 1 2" >> "$INSTDIR"/etc/fstab
 	done
 else
