@@ -44,10 +44,12 @@ elif test x"$1" = "xpre-gcc"; then
 	cat >"$INSTDIR"/pre-gcc <<-EOF
 	#!/bin/bash
 	set -e
-	/usr/sbin/env-update
 	source /etc/profile
 	emerge -1 gcc
-	gcc-config $(gcc-config -l | awk 'END{print $2}')
+	ccconf="\$(gcc-config -l | awk 'END{print \$2}')"
+	(test "\$ccconf" && \
+		test "\$(gcc-config -c)" != "\$ccconf" && \
+		gcc-config \$ccconf) || true
 	/usr/sbin/env-update
 	source /etc/profile
 	emerge -1 libtool
