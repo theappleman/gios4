@@ -122,6 +122,7 @@ cat >/etc/hosts <<EOF
 EOF
 
 aec="$aec $(ckc RTC); $(ckc B43 n); $(ckc DEVTMPFS);"
+aec="$aec $(ckc NETFILTER_XT_MATCH_RECENT)"
 for i in $(get_fstype); do
 	case "$i" in
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
