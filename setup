@@ -215,8 +215,8 @@ if test "$sources"; then
 	genkernel kernel
 	dracut -q $(ls /boot/kernel-genkernel* | sed -n '/kernel/{s/kernel/initramfs/;p;q}') $(ls /lib/modules/ 2>/dev/null | sed q)
 
-	test x"$dogrub" != "x" && \
-		bootdev=$(grub2-probe -t drive $dogrub | perl -ne 'm!/([^,]+)!;print $1')
+	(test x"$dogrub" != "x" && \
+		bootdev=$(grub2-probe -t drive $dogrub | perl -ne 'm!/([^,]+)!;print $1')) || true
 	if test -b "$bootdev"; then
 		aac="$aac grub2-install $bootdev;"
 		aac="$aac grub2-mkconfig -o /boot/grub2/grub.cfg;"
