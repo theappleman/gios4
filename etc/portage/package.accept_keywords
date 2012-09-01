@@ -1,3 +1,5 @@
-sys-boot/grub:2
-sys-fs/btrfs-progs
-sys-kernel/dracut
+=sys-boot/grub-2.00:2
+=sys-devel/gcc-4.6.3
+=sys-fs/btrfs-progs-0.19.11
+=sys-apps/utils-linux-2.21.2
+=sys-kernel/dracut-023
