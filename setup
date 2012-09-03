@@ -70,7 +70,7 @@ while test "${#@}" -gt 0; do
 		if test x"$py2ver" = "x"; then
 			extraprogs="$extraprogs dev-lang/python:2.7"
 		fi
-		aec="$aec eselect python set python2.7;"
+		aec="$aec eselect python set python2.7; python-updater;"
 		aac="$aac emerge -q xen;"
 		if test ! -d /run/lock; then
 			mkdir -p /run/lock
