@@ -1,10 +1,9 @@
 #!/bin/sh
 
 set -e
-extraprogs="acpid dhcpcd iproute2 msmtp ntp syslog-ng vixie-cron"
+extraprogs="acpid dhcpcd iproute2 msmtp ntp syslog-ng vixie-cron grub:2"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
-dogrub=/
 
 get_uuid() {
 	test "$1" || exit 1
@@ -17,15 +16,6 @@ get_uuid() {
 
 get_fstype() {
 	blkid | awk -F\" '{ print $(NF-1) }' | sort -u
-}
-
-ckc() {
-	if test -z "${sources=gentoo-sources}"; then
-		echo :
-		return
-	fi
-	config="/usr/share/genkernel/arch/$(uname -m | sed 's/i6/x/')/kernel-config"
-	echo "sed -i -e '/^CONFIG_$1=/d;\$aCONFIG_$1=${2:-y}' $config"
 }
 
 use() {
@@ -50,9 +40,6 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
-	# do not install a kernel source package
-	-c)	sources=
-		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
 		for i in gcc libtool binutils linux-headers glibc; do
@@ -63,9 +50,7 @@ while test "${#@}" -gt 0; do
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
-	-x)	#echo 'app-emulation/xen-tools' >> /etc/portage/package.keywords
-		#echo 'app-emulation/xen' >> /etc/portage/package.keywords
-		aec="$aec $(ckc PARAVIRT_GUEST); $(ckc XEN);"
+	-x)
 		py2ver="$(eselect python list --python2 | awk 'END{ print $2 }')"
 		if test x"$py2ver" = "x"; then
 			extraprogs="$extraprogs dev-lang/python:2.7"
@@ -88,8 +73,6 @@ while test "${#@}" -gt 0; do
 		;;
 	*)	if test x"$FQDN" = "x"; then
 			FQDN=$1
-		elif test "${sources=gentoo-sources}" && test x"$BOOTPART" = "x"; then
-			BOOTPART=$1
 		else
 			extraprogs="$extraprogs $1"
 		fi
@@ -99,9 +82,6 @@ while test "${#@}" -gt 0; do
 done
 
 test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
-
-test "${sources=gentoo-sources}" && \
-	test x"$BOOTPART" = "x" && read -e -p "Boot Partition: " BOOTPART
 
 egrep -q '^root:\*:' /etc/shadow && passwd
 
@@ -121,14 +101,11 @@ cat >/etc/hosts <<EOF
 ::1 $FQDN $HOSTNAME localhost
 EOF
 
-aec="$aec $(ckc RTC); $(ckc B43 n); $(ckc DEVTMPFS);"
-aec="$aec $(ckc NETFILTER_XT_MATCH_RECENT)"
 for i in $(get_fstype); do
 	case "$i" in
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
 				aec="$aec rc-update add mdraid boot;"
-				dogrub=/boot
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
@@ -136,12 +113,10 @@ for i in $(get_fstype); do
 			use	dev-libs/libgcrypt	static-libs
 			use	dev-libs/libgpg-error	static-libs
 			use	sys-apps/util-linux	static-libs
-			dogrub=/boot
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
 			aec="$aec rc-update add lvm boot;"
-			dogrub=/boot
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
@@ -149,8 +124,6 @@ for i in $(get_fstype); do
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
 		# as part of this overlay, btrfs-progs is unmasked
-		aec="$aec $(ckc BTRFS_FS);"
-		# btrfs needs to be enabled in the kernel
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
 		;;
@@ -166,17 +139,14 @@ for i in $(get_fstype); do
 	esac
 done
 
-if test x"$sources" != "x"; then
-	test "$dracutopts" && \
-		sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
+test "$dracutopts" && \
+	sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
 q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
-
-	egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf && \
-		dracutuse="$dracutuse device-mapper"
-	egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf && \
-		dracutuse="$dracutuse net"
-	test x"$dracutuse" != "x" && use sys-kernel/dracut "$dracutuse"
-fi
+egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf && \
+	dracutuse="$dracutuse device-mapper"
+egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf && \
+	dracutuse="$dracutuse net"
+test x"$dracutuse" != "x" && use sys-kernel/dracut "$dracutuse"
 
 test x"$bec" = "x" || sh -c "$bec"
 
@@ -185,9 +155,7 @@ emerge -q1u portage
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
-emerge -qu ${sources=gentoo-sources} ${sources:+genkernel} \
-	${sources:+grub:2} ${sources:+dracut} $fsprogs \
-	$extraprogs
+emerge -qu $fsprogs $extraprogs
 
 test x"$aec" = "x" || sh -c "$aec"
 
@@ -206,25 +174,18 @@ host $DOMAIN
 domain $DOMAIN
 EOF
 
-if test "$sources"; then
-	cat >>/etc/fstab <<-EOF
-	$(get_uuid $BOOTPART /boot) noatime,noauto 1 2
-	$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
-	EOF
-	grep MAKEOPTS /etc/make.conf >> /etc/genkernel.conf || true
-	genkernel kernel
-	dracut -q $(ls /boot/kernel-genkernel* | sed -n '/kernel/{s/kernel/initramfs/;p;q}') $(ls /lib/modules/ 2>/dev/null | sed q)
+cat >>/etc/fstab <<EOF
+$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
+EOF
 
-	(test x"$dogrub" != "x" && \
-		bootdev=$(grub2-probe -t drive $dogrub | perl -ne 'm!/([^,]+)!;print $1')) || true
-	if test -b "$bootdev"; then
-		aac="$aac grub2-install $bootdev;"
-		aac="$aac grub2-mkconfig -o /boot/grub2/grub.cfg;"
-	else
-		aac="$aac echo \"don't forget:\";"
-		aac="$aac echo -e \"\tgrub2-install <...>\";"
-		aac="$aac echo -e \"\tgrub2-mkconfig -o /boot/grub2/grub.cfg\";"
-	fi
+if mountpoint -q /boot; then
+	bootpart="$(grub2-probe -t device /boot)"
+	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
+	$(get_uuid $bootpart /boot) noatime,noauto 1 2
+	EOF
+
+	bootdev=$(grub2-probe -t drive /boot | perl -ne 'm!/([^,]+)!;print $1')
+	test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
 fi
 
 eselect news read
