@@ -33,11 +33,12 @@ or an existing Linux distribution.
 > \# mkswap /dev/sda3; swapon /dev/sda3  
 > \# mkfs.btrfs /dev/sda4  
 > \# mount /dev/sda4 /mnt/gentoo
+> \# mount /dev/sda2 /mnt/gentoo/boot
 
-  * Don't mount /boot
 2. Unpack the installation script tarball
 3. Download a stage3 tarball  
 > \# /mnt/gentoo/recovery unpack
+
 4. Run the recovery script (you must do this every time you boot into your
   installation environment)  
 > \# /mnt/gentoo/recovery prepare
@@ -45,6 +46,7 @@ or an existing Linux distribution.
 5. Setup a portage tree
   * sync, or download a snapshot
 > \# /mnt/gentoo/recovery sync
+
 6. Run the setup script under chroot  
 > \# /mnt/gentoo/recovery setup
 
@@ -61,8 +63,5 @@ from this host unauthenticated. A setup, similar to
 [holly's](http://applehq.eu/holly/postfix), will work fine (as it's
 what I use).
 
-The boot partition has to be handled in a special way because grub2 needs it
-mounted inside the chroot and genkernel mounts /boot while it works.
-
 Finally, it asks you to set your root password. This is purely a practical
-matter.
+matter. If you change the root password, setup will not ask for it again.
