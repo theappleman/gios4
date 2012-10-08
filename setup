@@ -45,7 +45,7 @@ while test "${#@}" -gt 0; do
 		for i in gcc libtool binutils linux-headers glibc; do
 			bec="$bec emerge -q1 $i;"
 		done
-		sources="hardened-sources"
+		extraprogs="$extraprogs hardened-sources"
 		bec="$bec emerge -qe system;"
 		;;
 	-r)	recommendedprogs="acpid dhcpcd iproute2 ntp syslog-ng vixie-cron"
