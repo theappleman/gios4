@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-extraprogs="acpid dhcpcd iproute2 msmtp ntp syslog-ng vixie-cron grub:2"
+extraprogs="msmtp grub:2"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
@@ -47,6 +47,12 @@ while test "${#@}" -gt 0; do
 		done
 		sources="hardened-sources"
 		bec="$bec emerge -qe system;"
+		;;
+	-r)	recommendedprogs="acpid dhcpcd iproute2 ntp syslog-ng vixie-cron"
+		for i in "$recommendedprogs"; do
+			aec="$aec rc-update add $i default"
+		done
+		extraprogs="$extraprogs $recommendedprogs"
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
