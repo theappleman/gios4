@@ -2,7 +2,7 @@
 
 INSTDIR="$(dirname $0)"
 chroot=$(which chroot)
-chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
+chrootcmd="env -i TERM=$TERM HOME=/ SHELL=/bin/bash $chroot $INSTDIR"
 
 if test x"$1" = "xchroot"; then
 	echo "# source /etc/profile"
