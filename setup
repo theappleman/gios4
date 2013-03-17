@@ -145,12 +145,18 @@ for i in $(get_fstype); do
 	esac
 done
 
+if test -f /etc/make.conf; then
+	# append contents of /etc/make.conf to /etc/portage/make.conf
+	tee -a /etc/portage/make.conf </etc/make.conf
+	rm -f /etc/make.conf
+fi
+
 test "$dracutopts" && \
 	sed -i -e '/DRACUT_MODULES/{c'"DRACUT_MODULES=\"$dracutopts\"
-q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/make.conf
-egrep -q "lvm|crypt|mdraid|dmraid" /etc/make.conf && \
+q}" -e '$a'"DRACUT_MODULES=\"$dracutopts\"" /etc/portage/make.conf
+egrep -q "lvm|crypt|mdraid|dmraid" /etc/portage/make.conf && \
 	dracutuse="$dracutuse device-mapper"
-egrep -q "iscsi|livenet|nbd|ssh-client" /etc/make.conf && \
+egrep -q "iscsi|livenet|nbd|ssh-client" /etc/portage/make.conf && \
 	dracutuse="$dracutuse net"
 test x"$dracutuse" != "x" && use sys-kernel/dracut "$dracutuse"
 
