@@ -49,8 +49,8 @@ while test "${#@}" -gt 0; do
 		bec="$bec emerge -qe system;"
 		;;
 	-r)	recoprogs="acpid dhcpcd syslog-ng vixie-cron"
-		for i in "$recoprogs"; do
-			aec="$aec rc-update add $i default"
+		for i in $recoprogs; do
+			aec="$aec rc-update add $i default;"
 		done
 		extraprogs="$extraprogs $recoprogs iproute2 ntp"
 		;;
