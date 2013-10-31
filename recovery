@@ -41,6 +41,9 @@ elif test x"$1" = "xprepare"; then
 	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
 	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
 
+	mountpoint -q "$INSTDIR"/tmp || mount -t tmpfs tmpfs "$INSTDIR"/tmp
+	mountpoint -q "$INSTDIR"/var/tmp || mount -o size=90% -t tmpfs tmpfs "$INSTDIR"/var/tmp
+
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 	$chrootcmd /usr/sbin/env-update
 elif test x"$1" = "xproxy"; then
