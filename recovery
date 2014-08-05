@@ -23,7 +23,7 @@ elif test x"$1" = "xhardened-fetch" || test x"$1" = "xhardened-unpack"; then
 	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/latest-stage3-amd64-hardened.txt | sed '3!d')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/$getpath
-	test x"$1" = "xunpack" && tar xkjpf $basepath -C $INSTDIR
+	test x"$1" = "xhardened-unpack" && tar xkjpf $basepath -C $INSTDIR
 	popd
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --quiet --sync
