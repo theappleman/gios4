@@ -89,7 +89,8 @@ done
 
 test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
 
-egrep -q '^root:\*:' /etc/shadow && passwd
+#egrep -q '^root:\*:' /etc/shadow && passwd
+sed -i -e '/^root:\*/s/:\*:/::/' /etc/shadow
 
 HOSTNAME="$(echo $FQDN | awk -F. '{print $1}')"
 # The following awk script could be simplified to:
