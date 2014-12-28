@@ -139,6 +139,8 @@ for i in $(get_fstype); do
 		;;
 	fat*)	fsprogs="$fsprogs dosfstools"
 		;;
+	exfat)	fsprogs="$fsprogs exfat-utils"
+		;;
 	ntfs)	fsprogs="$fsprogs ntfs3g"
 		;;
 	ext*)	;; # nothing needs to be done
