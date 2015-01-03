@@ -224,6 +224,8 @@ else
 		done
 fi
 
+test "$aac" = "*grub2-install*" && aac="$aac grub2-mkconfig -o /boot/grub/grub.cfg;"
+
 test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
 
 eselect news read
