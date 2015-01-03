@@ -170,11 +170,11 @@ emerge -q1u portage
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
-emerge -qu $fsprogs $extraprogs
-
 # Remove udev in favour of systemd
-emerge -qC udev
-emerge -q1 systemd
+emerge -qC sys-fs/udev || true
+emerge -q1u systemd
+
+emerge -qu $fsprogs $extraprogs
 
 test x"$aec" = "x" || sh -c "$aec"
 
