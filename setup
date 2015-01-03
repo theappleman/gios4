@@ -190,17 +190,21 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 fi
 
 cat >>/etc/fstab <<EOF
-$(get_uuid $(grub2-probe -t device /) /) noatime 1 1
+$(get_uuid $(grub2-probe -t device / | sed q) /) noatime 1 1
 EOF
 
 if mountpoint -q /boot; then
-	bootpart="$(grub2-probe -t device /boot)"
+	bootpart="$(grub2-probe -t device /boot | sed q)"
 	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
 	$(get_uuid $bootpart /boot) noatime,noauto 1 2
 	EOF
 
-	bootdev=$(grub2-probe -t drive /boot | perl -ne 'm!/([^,]+)!;print $1')
-	test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
+	# This produces output like:
+	#  (hostdisk//dev/sda,gpt3)
+	grub2-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
+		while read bootdev; do
+			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
+		done
 fi
 
 eselect news read
