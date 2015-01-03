@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-extraprogs="msmtp grub:2"
+extraprogs="grub:2"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
@@ -182,12 +182,6 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	env-update && source /etc/profile
 	emerge -1q libtool
 fi
-
-cat >>/etc/msmtprc <<EOF
-maildomain $FQDN
-host $DOMAIN
-domain $DOMAIN
-EOF
 
 cat >>/etc/fstab <<EOF
 $(get_uuid $(grub2-probe -t device /) /) noatime 1 1
