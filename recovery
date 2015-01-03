@@ -81,7 +81,7 @@ elif test x"$1" = "xfstab"; then
 ' fslist=$(mount)
 	for i in $fslist; do
 		fs=$(get_uuid $(echo $i | awk '{print $1}') $(echo $i | awk "\$3 ~ /^$INSTDOT./{sub(/$INSTDOT./,\"/\",3);print \$3}"))
-		test x"$fs" != "x" && echo "$fs noatime 1 2" >> "$INSTDIR"/etc/fstab
+		test x"$fs" != "x" && tee -a "$INSTDIR"/etc/fstab <<<"$fs noatime 1 2"
 	done
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
