@@ -171,7 +171,7 @@ cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q timezone-data
 
 # Remove udev in favour of systemd
-emerge -qC sys-fs/udev || true
+emerge -qC sys-fs/udev virtual/udev || true
 emerge -q1u systemd
 
 emerge -qu $fsprogs $extraprogs
