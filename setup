@@ -42,6 +42,10 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
+	# Run genkernel during the build
+	-g)	run_genkernel="true"
+		extraprogs="$extraprogs genkernel-next"
+		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
 		for i in gcc libtool binutils linux-headers glibc; do
@@ -50,11 +54,13 @@ while test "${#@}" -gt 0; do
 		extraprogs="$extraprogs hardened-sources"
 		bec="$bec emerge -qe system;"
 		;;
+	-n)	gkopts="$gkopts --nconfig"
+		;;
 	-r)	recoprogs="acpid dhcpcd"
 		for i in $recoprogs; do
 			aec="$aec rc-update add $i default;"
 		done
-		extraprogs="$extraprogs $recoprogs iproute2 ntp dracut genkernel-next vim"
+		extraprogs="$extraprogs $recoprogs iproute2 ntp dracut vim"
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
@@ -114,10 +120,12 @@ for i in $(get_fstype); do
 	case "$i" in
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
+				gkopts="$gkopts --mdadm"
 				aec="$aec rc-update add mdraid boot;"
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
+			gkopts="$gkopts --luks"
 			use	dev-libs/popt		static-libs
 			use	dev-libs/libgcrypt	static-libs
 			use	dev-libs/libgpg-error	static-libs
@@ -125,6 +133,7 @@ for i in $(get_fstype); do
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
+			gkopts="$gkopts --lvm"
 			aec="$aec rc-update add lvm boot;"
 			use	sys-boot/grub:2		device-mapper
 			;;
@@ -132,6 +141,9 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
+		# In addition to adding btrfs RAID to initramfs, pop open
+		# the config menu to add btrfs to the kernel
+		gkopts="$gkopts --btrfs --nconfig"
 		# as part of this overlay, btrfs-progs is unmasked
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
@@ -206,6 +218,8 @@ if mountpoint -q /boot; then
 			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
 		done
 fi
+
+test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
 
 eselect news read
 
