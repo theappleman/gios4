@@ -172,6 +172,10 @@ cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 
 emerge -qu $fsprogs $extraprogs
 
+# Remove udev in favour of systemd
+emerge -qC udev
+emerge -q1 systemd
+
 test x"$aec" = "x" || sh -c "$aec"
 
 egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner -q --reallyall || true
