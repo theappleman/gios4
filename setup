@@ -174,7 +174,7 @@ emerge -qu $fsprogs $extraprogs
 
 test x"$aec" = "x" || sh -c "$aec"
 
-egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner --reallyall || true
+egrep -q 'dev-lang/perl' /var/log/emerge.log && perl-cleaner -q --reallyall || true
 egrep -q 'dev-lang/python' /var/log/emerge.log && python-updater || true
 if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	ccpro=$(gcc-config -l | awk 'END{print $2}')
