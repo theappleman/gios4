@@ -87,7 +87,7 @@ while test "${#@}" -gt 0; do
 	shift
 done
 
-test x"$FQDN" = "x" && read -e -p "Hostname: " FQDN
+test x"$FQDN" = "x" && FQDN="localhost.localdomain"
 
 #egrep -q '^root:\*:' /etc/shadow && passwd
 sed -i -e '/^root:\*/s/:\*:/::/' /etc/shadow
