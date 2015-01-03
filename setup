@@ -217,6 +217,11 @@ if mountpoint -q /boot; then
 		while read bootdev; do
 			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
 		done
+else
+	grub2-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
+		while read bootdev; do
+			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
+		done
 fi
 
 test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
