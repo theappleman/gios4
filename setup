@@ -10,12 +10,14 @@ get_uuid() {
 	test "$2" || exit 2
 	/sbin/blkid | awk -F\" -e 'OFS=""' -e "/^$(echo $1 | tr / .):/{"'
 	for(n=1;n<=NF;n++){if($n~/UUID=/){break}}
+	for(o=1;o<=NF;o++){if($o~/TYPE=/){break}}
 	if($n!~/UUID=/){exit}
-	print "UUID=\"",$(n+1),"\" '"$2"' ",$(NF-1);exit}'
+	if($o!~/TYPE=/){exit}
+	print "UUID=\"",$(n+1),"\" '"$2"' ",$(o+1);exit}'
 }
 
 get_fstype() {
-	blkid | awk -F\" '{ print $(NF-1) }' | sort -u
+	blkid | awk -F\" '{for(n=1;n<=NF;n++){if($n~/TYPE=/){break}};print$(n+1)}' | sort -u
 }
 
 use() {
