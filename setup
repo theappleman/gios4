@@ -48,11 +48,11 @@ while test "${#@}" -gt 0; do
 		extraprogs="$extraprogs hardened-sources"
 		bec="$bec emerge -qe system;"
 		;;
-	-r)	recoprogs="acpid dhcpcd syslog-ng vixie-cron"
+	-r)	recoprogs="acpid dhcpcd"
 		for i in $recoprogs; do
 			aec="$aec rc-update add $i default;"
 		done
-		extraprogs="$extraprogs $recoprogs iproute2 ntp"
+		extraprogs="$extraprogs $recoprogs iproute2 ntp dracut genkernel-next vim"
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
