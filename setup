@@ -85,36 +85,14 @@ while test "${#@}" -gt 0; do
 		;;
 	--)	break
 		;;
-	*)	if test x"$FQDN" = "x"; then
-			FQDN=$1
-		else
-			extraprogs="$extraprogs $1"
-		fi
+	*)	extraprogs="$extraprogs $1"
 		;;
 	esac
 	shift
 done
 
-test x"$FQDN" = "x" && FQDN="localhost.localdomain"
-
 #egrep -q '^root:\*:' /etc/shadow && passwd
 sed -i -e '/^root:\*/s/:\*:/::/' /etc/shadow
-
-HOSTNAME="$(echo $FQDN | awk -F. '{print $1}')"
-# The following awk script could be simplified to:
-#	{ print $(NF-1) "." $NF }
-# However, if you change the '(NF-1)' below to '2', you just chop off
-# the first part (if you have deeper hostnames and more robust mail)
-DOMAIN="$(echo $FQDN | awk -F. '{ for(i=(NF-1); i<NF; i++) { printf("%s.", $i) } print $NF }')"
-
-cat >/etc/conf.d/hostname <<EOF
-hostname="$HOSTNAME"
-EOF
-
-cat >/etc/hosts <<EOF
-127.0.0.1 $FQDN $HOSTNAME localhost
-::1 $FQDN $HOSTNAME localhost
-EOF
 
 for i in $(get_fstype); do
 	case "$i" in
