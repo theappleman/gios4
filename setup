@@ -202,8 +202,8 @@ test "$aac" = "*grub2-install*" && aac="$aac grub2-mkconfig -o /boot/grub/grub.c
 
 test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
 
-egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' || \
-	sed -i -e '/# GRUB_CMDLINE_LINUX="init=/usr/lib/systemd/systemd"/s/^# //'
+egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
+	sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
 
 eselect news read
 
