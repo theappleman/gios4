@@ -83,6 +83,11 @@ elif test x"$1" = "xfstab"; then
 		fs=$(get_uuid $(echo $i | awk '{print $1}') $(echo $i | awk "\$3 ~ /^$INSTDOT./{print\$3}" | sed -e 's!'"$INSTDIR"'!!'))
 		test x"$fs" != "x" && tee -a "$INSTDIR"/etc/fstab <<<"$fs noatime 1 2"
 	done
+	# Find swap partitions
+	/sbin/blkid | while read i; do
+		sw=$(get_uuid $(echo $i | awk '/TYPE="swap"/{print$1}') none)
+		test x"$sw" != "x" && tee -a "$INSTDIR"/etc/fstab <<<"$fs sw 0 0"
+	done
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 chroot\t\tchroot into your environment"
