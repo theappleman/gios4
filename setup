@@ -186,30 +186,21 @@ cat >>/etc/fstab <<EOF
 $(get_uuid $(grub2-probe -t device / | sed q) /) noatime 1 1
 EOF
 
-echo Starting boot device detection
-if mountpoint /boot; then
-	echo Separate boot device found
+if mountpoint -q /boot; then
 	bootpart="$(grub2-probe -t device /boot | sed q)"
-	echo detected boot: $bootpart
-	if test "$bootpart" = "/dev/*"; then
-		cat >>/etc/fstab <<-EOF
-		$(get_uuid $bootpart /boot) noatime,noauto 1 2
-		EOF
-		echo /boot fstab entry added
-	fi
+	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
+	$(get_uuid $bootpart /boot) noatime,noauto 1 2
+	EOF
 
 	# This produces output like:
 	#  (hostdisk//dev/sda,gpt3)
 	grub2-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
 		while read bootdev; do
-			echo bootdev: $bootdev
 			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
 		done
 else
-	echo separate boot not found, installing to root disk
 	grub2-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
 		while read bootdev; do
-			echo bootdev: $bootdev
 			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
 		done
 fi
