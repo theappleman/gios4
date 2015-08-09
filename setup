@@ -56,7 +56,7 @@ while test "${#@}" -gt 0; do
 		;;
 	-n)	gkopts="$gkopts --nconfig"
 		;;
-	-r)	extraprogs="$extraprogs dhcpcd iproute2 vim wpa_supplicant"
+	-r)	extraprogs="$extraprogs vim wpa_supplicant"
 		;;
 	# install the xen hypervisor
 	# this is incompatible with the hardened profile
