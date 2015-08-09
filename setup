@@ -44,7 +44,14 @@ while test "${#@}" -gt 0; do
 	case "$1" in
 	# Run genkernel during the build
 	-g)	run_genkernel="true"
-		extraprogs="$extraprogs genkernel-next"
+		memtot=$(awk '/MemTotal/{print$2}' /proc/meminfo)
+		swaptot=$(awk '/SwapTotal/{print$2}' /proc/meminfo)
+		if test $(( $memtot + $swaptot )) -gt 512808; then
+			extraprogs="$extraprogs genkernel-next"
+		else
+			# bug 554200
+			(echo Not enough RAM to compile boost for genkernel-next.>&2;)
+		fi
 		;;
 	# Set profile to hardened
 	-h)	bec="eselect profile set hardened/linux/$arch;"
