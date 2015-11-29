@@ -112,6 +112,7 @@ elif test x"$1" = "xsystemd"; then
 	# Remove udev in favour of systemd
 	emerge -qC sys-fs/udev virtual/udev || true
 	emerge -q1u systemd
+	eselect news read
 	EOF
 	chmod +x "$INSTDIR"/systemd
 	$chrootcmd /systemd
