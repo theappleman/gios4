@@ -1,8 +1,14 @@
 #!/bin/sh
 
 INSTDIR="$(dirname $0)"
-chroot=$(which chroot)
-chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
+
+if systemctl --no-pager >/dev/null; then
+	noprep=nnn
+	chrootcmd="systemd-nspawn -D$INSTDIR"
+else
+	chroot=$(which chroot)
+	chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
+fi
 
 if test x"$1" = "xchroot"; then
 	echo "# source /etc/profile"
@@ -37,13 +43,15 @@ elif test x"$1" = "xweb-sync"; then
 		popd
 	fi
 elif test x"$1" = "xprepare"; then
-	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
-	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
-	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
-
-	mountpoint -q "$INSTDIR"/tmp || mount -t tmpfs tmpfs "$INSTDIR"/tmp
-	mountpoint -q "$INSTDIR"/var/tmp || mount -o size=90% -t tmpfs tmpfs "$INSTDIR"/var/tmp
-
+	if test x"$noprep" != "xnnn"; then
+		mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
+		mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
+		mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
+	
+		mountpoint -q "$INSTDIR"/tmp || mount -t tmpfs tmpfs "$INSTDIR"/tmp
+		mountpoint -q "$INSTDIR"/var/tmp || mount -o size=90% -t tmpfs tmpfs "$INSTDIR"/var/tmp
+	fi
+	
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 	$chrootcmd /usr/sbin/env-update
 elif test x"$1" = "xproxy"; then
@@ -88,6 +96,26 @@ elif test x"$1" = "xfstab"; then
 		for(n=1;n<=NF;n++){if($n~/UUID=/){break}}
 		if($n!~/UUID=/){exit}
 		print "UUID=\"",$(n+1),"\" none swap sw 0 0"}' | tee -a "$INSTDIR"/etc/fstab
+elif test x"$1" = "xsystemd"; then
+	cat >"$INSTDIR"/systemd <<-EOF
+	#!/bin/bash
+	set -e
+	source /etc/profile
+	sed -i -e '/^root:\*/s/:\*:/::/' /etc/shadow
+
+	if test -f /etc/make.conf; then
+	        # append contents of /etc/make.conf to /etc/portage/make.conf
+	        tee -a /etc/portage/make.conf </etc/make.conf
+	        rm -f /etc/make.conf
+	fi
+	
+	# Remove udev in favour of systemd
+	emerge -qC sys-fs/udev virtual/udev || true
+	emerge -q1u systemd
+	EOF
+	chmod +x "$INSTDIR"/systemd
+	$chrootcmd /systemd
+	rm "$INSTDIR"/systemd
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 chroot\t\tchroot into your environment"
@@ -103,6 +131,7 @@ else
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
 	echo
 	echo -e "$0 pre-gcc\t\tupdate gcc"
+	echo -e "$0 systemd\t\tconvert system from openrc to systemd"
 	echo -e "$0 fstab\t\twrite fstab entries"
 	echo
 	echo -e "$0 setup <...>\trun the setup program"
