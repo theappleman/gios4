@@ -1,2 +1,3 @@
 sys-apps/systemd curl importd gcrypt lzma
 sys-apps/systemd nat
+=sys-apps/util-linux-2.27.1 -systemd
