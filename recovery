@@ -112,6 +112,7 @@ elif test x"$1" = "xsystemd"; then
 	# Remove udev in favour of systemd
 	emerge -qC sys-fs/udev virtual/udev || true
 	emerge -q1u systemd
+	sed -i -e '/^hosts/s/files dns/files mymachines resolve dns/' /etc/nsswitch.conf
 	eselect news read
 	EOF
 	chmod +x "$INSTDIR"/systemd
