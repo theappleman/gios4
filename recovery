@@ -19,14 +19,14 @@ elif test x"$1" = "xsetup"; then
 elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	pushd "$INSTDIR"
 	arch=$(uname -m | sed 's/x86_/amd/')
-	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64.txt | awk 'NR==3{print$1}')
+	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64.txt | awk 'NR==3{print$1}')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
 	test x"$1" = "xunpack" && $PV $basepath | tar xkjp -C $INSTDIR
 	popd
 elif test x"$1" = "xhardened-fetch" || test x"$1" = "xhardened-unpack"; then
 	pushd "$INSTDIR"
-	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/latest-stage3-amd64-hardened.txt | awk 'NR==3{print$1}')
+	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/latest-stage3-amd64-hardened.txt | awk 'NR==3{print$1}')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/$getpath
 	test x"$1" = "xhardened-unpack" && $PV $basepath | tar xkjp -C $INSTDIR
