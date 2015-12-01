@@ -7,7 +7,7 @@ chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
 if $(which pv 2>&1 >/dev/null); then
 	PV="pv"
 else
-	PV="bunzip -c"
+	PV="cat"
 fi
 
 if test x"$1" = "xchroot"; then
