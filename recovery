@@ -39,7 +39,7 @@ elif test x"$1" = "xweb-sync"; then
 	else
 		pushd "$INSTDIR"
 		wget -c http://${2:-distfiles.gentoo.org}/snapshots/portage-latest.tar.bz2
-		tar xf "$INSTDIR"/portage-latest.tar.bz2 -C "$INSTDIR"/usr
+		$PV "$INSTDIR"/portage-latest.tar.bz2 | tar x -C "$INSTDIR"/usr
 		popd
 	fi
 elif test x"$1" = "xprepare"; then
