@@ -115,7 +115,7 @@ elif test x"$1" = "xsystemd"; then
 	sed -i -e '/^hosts/s/files dns/files mymachines resolve dns/' /etc/nsswitch.conf
 	sed -i -e '/util-linux/d' /etc/portage/package.use/sys-apps
 	rm /etc/resolv.conf; ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
-	eselect profile default/linux/amd64/13.0/systemd
+	eselect profile set default/linux/amd64/13.0/systemd
 	eselect news read
 	EOF
 	chmod +x "$INSTDIR"/systemd
