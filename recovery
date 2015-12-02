@@ -4,7 +4,7 @@ INSTDIR="$(dirname $0)"
 chroot=$(which chroot)
 chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
 
-if $(which pv 2>&1 >/dev/null); then
+if which pv 2>&1 >/dev/null; then
 	PV="pv"
 else
 	PV="cat"
