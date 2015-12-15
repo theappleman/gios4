@@ -1,7 +1,8 @@
 VER=$(shell git describe --always)
+TARGETS=setup systemd
 
-all:
-	machinectl clone gshis gshis-$(VER)
-	xargs -n1 $(PWD)-$(VER)/recovery <<<"unpack proxy prepare systemd"
+$(TARGETS):
+	machinectl clone gshis gshis-$(VER)-$@
+	xargs -n1 $(PWD)-$(VER)-$@/recovery <<<"unpack proxy prepare $@"
 
-.PHONY: all
+.PHONY: $(TARGETS)
