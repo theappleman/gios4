@@ -5,19 +5,19 @@
 This is not an overlay in the normal portage sense.
 Nor is it a complete stage4.
 
-[This](https://applehq.eu/gios4.txz) is a tarball that is unpacked over
+[This](https://github.com/theappleman/gios4/archive/master.tar.gz)
+is a tarball that is unpacked over
 a stage3, and with the included scripts can setup gentoo in under 5 hours.
 
 ## Documentation
 * [Quick start](https://applehq.eu/projects/gentoo-ios4)
-* [Walkthrough](https://applehq.eu/gios4.html)
 
 ## Downloads
 Clean tarballs that try to match the latest branches. To create your own,
 see _git-archive(1)_:
 
-* [master](https://applehq.eu/gios4.txz)
-* [next](https://applehq.eu/gios4-next.txz)
+* [master](https://github.com/theappleman/gios4/archive/master.tar.gz)
+* [master](https://github.com/theappleman/gios4/archive/next.tar.gz)
 
 ## Initial setup
 0. Boot into your installation environment; be that live media (e.g. CD, USB)
@@ -54,14 +54,3 @@ or an existing Linux distribution.
 7. Wait; and verify the installation
 8. Reboot!
 
-## FAQ
-### Why does setup ask those questions?
-Hostnames are special and should be unique. Give it one with a domain name.
-The script uses this to setup the hostname, hosts file and the outward mail.
-For your mail, this assumes that your second level domain can send mail
-from this host unauthenticated. A setup, similar to
-[holly's](http://applehq.eu/holly/postfix), will work fine (as it's
-what I use).
-
-Finally, it asks you to set your root password. This is purely a practical
-matter. If you change the root password, setup will not ask for it again.

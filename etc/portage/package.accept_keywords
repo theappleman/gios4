@@ -1,4 +1,16 @@
-=sys-boot/grub-2.02_beta2-r6
-=sys-fs/btrfs-progs-3.17.1
-=sys-apps/util-linux-2.25.2
-=sys-kernel/dracut-040-r2
+# required by sys-apps/systemd-228-r1::gentoo[lz4]
+# required by virtual/udev-215::gentoo[systemd]
+# required by sys-apps/hwids-20150717-r1::gentoo[udev]
+=app-arch/lz4-0_p131 ~amd64
+# required by sys-apps/systemd-228-r1::gentoo
+# required by virtual/udev-215::gentoo[systemd]
+# required by virtual/dev-manager-0::gentoo
+# required by @system
+# required by @world (argument)
+=sys-apps/hwids-20150717-r1 ~amd64
+# required by sys-apps/systemd-228-r1::gentoo
+# required by virtual/udev-215::gentoo[systemd]
+# required by sys-apps/hwids-20150717-r1::gentoo[udev]
+=sys-apps/util-linux-2.27.1 ~amd64
+# required by =systemd-228-r1
+=sys-apps/systemd-228-r1 ~amd64

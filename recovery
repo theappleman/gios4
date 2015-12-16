@@ -1,8 +1,20 @@
 #!/bin/sh
 
 INSTDIR="$(dirname $0)"
-chroot=$(which chroot)
-chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
+
+if systemctl --no-pager >/dev/null; then
+	noprep=nnn
+	chrootcmd="systemd-nspawn -D$INSTDIR"
+else
+	chroot=$(which chroot)
+	chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
+fi
+
+if which pv 2>&1 >/dev/null; then
+	PV="pv"
+else
+	PV="cat"
+fi
 
 if test x"$1" = "xchroot"; then
 	echo "# source /etc/profile"
@@ -13,17 +25,17 @@ elif test x"$1" = "xsetup"; then
 elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	pushd "$INSTDIR"
 	arch=$(uname -m | sed 's/x86_/amd/')
-	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64.txt | sed '3!d')
+	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64.txt | awk 'NR==3{print$1}')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
-	test x"$1" = "xunpack" && tar xkjpf $basepath -C $INSTDIR
+	test x"$1" = "xunpack" && $PV $basepath | tar xkjp -C $INSTDIR
 	popd
 elif test x"$1" = "xhardened-fetch" || test x"$1" = "xhardened-unpack"; then
 	pushd "$INSTDIR"
-	getpath=$(wget -O- http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/latest-stage3-amd64-hardened.txt | sed '3!d')
+	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/latest-stage3-amd64-hardened.txt | awk 'NR==3{print$1}')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/amd64/autobuilds/$getpath
-	test x"$1" = "xhardened-unpack" && tar xkjpf $basepath -C $INSTDIR
+	test x"$1" = "xhardened-unpack" && $PV $basepath | tar xkjp -C $INSTDIR
 	popd
 elif test x"$1" = "xsync"; then
 	$chrootcmd /usr/bin/emerge --quiet --sync
@@ -33,17 +45,19 @@ elif test x"$1" = "xweb-sync"; then
 	else
 		pushd "$INSTDIR"
 		wget -c http://${2:-distfiles.gentoo.org}/snapshots/portage-latest.tar.bz2
-		tar xf "$INSTDIR"/portage-latest.tar.bz2 -C "$INSTDIR"/usr
+		$PV "$INSTDIR"/portage-latest.tar.bz2 | tar x -C "$INSTDIR"/usr
 		popd
 	fi
 elif test x"$1" = "xprepare"; then
-	mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
-	mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
-	mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
-
-	mountpoint -q "$INSTDIR"/tmp || mount -t tmpfs tmpfs "$INSTDIR"/tmp
-	mountpoint -q "$INSTDIR"/var/tmp || mount -o size=90% -t tmpfs tmpfs "$INSTDIR"/var/tmp
-
+	if test x"$noprep" != "xnnn"; then
+		mountpoint -q "$INSTDIR"/proc || mount -t proc proc "$INSTDIR"/proc
+		mountpoint -q "$INSTDIR"/dev || mount --rbind /dev "$INSTDIR"/dev
+		mountpoint -q "$INSTDIR"/sys || mount --rbind /sys "$INSTDIR"/sys
+	
+		mountpoint -q "$INSTDIR"/tmp || mount -t tmpfs tmpfs "$INSTDIR"/tmp
+		mountpoint -q "$INSTDIR"/var/tmp || mount -o size=90% -t tmpfs tmpfs "$INSTDIR"/var/tmp
+	fi
+	
 	cmp -s /etc/resolv.conf "$INSTDIR/etc/resolv.conf" || cp -L /etc/resolv.conf $INSTDIR/etc
 	$chrootcmd /usr/sbin/env-update
 elif test x"$1" = "xproxy"; then
@@ -73,16 +87,46 @@ elif test x"$1" = "xfstab"; then
 		test "$2" || exit 2
 		/sbin/blkid | awk -F\" -e 'OFS=""' -e "/^$(echo $1 | tr / .):/{"'
 		for(n=1;n<=NF;n++){if($n~/UUID=/){break}}
+		for(o=1;o<=NF;o++){if($o~/TYPE=/){break}}
 		if($n!~/UUID=/){exit}
-		print "UUID=\"",$(n+1),"\" '"$2"' ",$(NF-1);exit}'
+		if($o!~/TYPE=/){exit}
+		print "UUID=\"",$(n+1),"\" '"$2"' ",$(o+1);exit}'
 	}
 	INSTDOT="$(echo $INSTDIR | tr / .)"
-	IFS='
-' fslist=$(mount)
-	for i in $fslist; do
-		fs=$(get_uuid $(echo $i | awk '{print $1}') $(echo $i | awk "\$3 ~ /^$INSTDOT./{sub(/$INSTDOT./,\"/\",3);print \$3}"))
-		test x"$fs" != "x" && echo "$fs noatime 1 2" >> "$INSTDIR"/etc/fstab
+	mount | while read i; do
+		fs=$(get_uuid $(echo $i | awk '{print $1}') $(echo $i | awk "\$3 ~ /^$INSTDOT./{print\$3}" | sed -e 's!'"$INSTDIR"'!!'))
+		test x"$fs" != "x" && tee -a "$INSTDIR"/etc/fstab <<<"$fs noatime 1 2"
 	done
+	# Find swap partitions
+		/sbin/blkid | awk -F\" -e 'OFS=""' -e '/TYPE="swap"/{
+		for(n=1;n<=NF;n++){if($n~/UUID=/){break}}
+		if($n!~/UUID=/){exit}
+		print "UUID=\"",$(n+1),"\" none swap sw 0 0"}' | tee -a "$INSTDIR"/etc/fstab
+elif test x"$1" = "xsystemd"; then
+	cat >"$INSTDIR"/systemd <<-EOF
+	#!/bin/bash
+	set -e
+	source /etc/profile
+	sed -i -e '/^root:\*/s/:\*:/::/' /etc/shadow
+
+	if test -f /etc/make.conf; then
+	        # append contents of /etc/make.conf to /etc/portage/make.conf
+	        tee -a /etc/portage/make.conf </etc/make.conf
+	        rm -f /etc/make.conf
+	fi
+	
+	# Remove udev in favour of systemd
+	emerge -qC sys-fs/udev virtual/udev || true
+	emerge -q1u systemd
+	sed -i -e '/^hosts/s/files dns/files mymachines resolve dns/' /etc/nsswitch.conf
+	sed -i -e '/util-linux/d' /etc/portage/package.use/sys-apps
+	rm /etc/resolv.conf; ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+	eselect profile set default/linux/amd64/13.0/systemd
+	eselect news read
+	EOF
+	chmod +x "$INSTDIR"/systemd
+	$chrootcmd /systemd
+	rm "$INSTDIR"/systemd
 else
 	echo -e "$0 prepare\t\tprepare required mountpoints"
 	echo -e "$0 chroot\t\tchroot into your environment"
@@ -98,6 +142,7 @@ else
 	echo -e "$0 web-sync\t\tsync portage tree via snapshots"
 	echo
 	echo -e "$0 pre-gcc\t\tupdate gcc"
+	echo -e "$0 systemd\t\tconvert system from openrc to systemd"
 	echo -e "$0 fstab\t\twrite fstab entries"
 	echo
 	echo -e "$0 setup <...>\trun the setup program"
