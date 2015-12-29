@@ -4,7 +4,7 @@ INSTDIR="$(dirname $0)"
 
 if systemctl --no-pager >/dev/null; then
 	noprep=nnn
-	chrootcmd="systemd-nspawn -D$INSTDIR"
+	chrootcmd="systemd-nspawn --settings=false -D$INSTDIR"
 else
 	chroot=$(which chroot)
 	chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
