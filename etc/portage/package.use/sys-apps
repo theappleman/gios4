@@ -1,3 +1,6 @@
 sys-apps/systemd curl importd gcrypt lzma
-sys-apps/systemd nat
+sys-apps/systemd nat gnuefi
+
+# REMOVE ME AFTER INSTALLATION (circular dependencies)
+sys-apps/pciutils -udev
 =sys-apps/util-linux-2.27.1 -systemd

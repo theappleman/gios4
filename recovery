@@ -4,7 +4,10 @@ INSTDIR="$(dirname $0)"
 
 if systemctl --no-pager >/dev/null; then
 	noprep=nnn
-	chrootcmd="systemd-nspawn -D$INSTDIR"
+	chrootcmd="systemd-nspawn --settings=false -D$INSTDIR"
+	if test -f /usr/portage/metadata/timestamp && test ! -f $INSTDIR/usr/portage/metadata/timestamp; then
+		chrootcmd="$chrootcmd --bind=/usr/portage"
+	fi
 else
 	chroot=$(which chroot)
 	chrootcmd="env -i TERM=$TERM HOME=$HOME SHELL=/bin/bash $chroot $INSTDIR"
