@@ -55,10 +55,11 @@ or an existing Linux distribution.
   installation environment)  
 > \# /mnt/gentoo/recovery prepare
 
-6. Setup a portage tree
-  * sync, or download a snapshot
-> \# /mnt/gentoo/recovery sync
+6. Setup a portage tree  
+> \# /mnt/gentoo/recovery web-sync
 
+  * if the stage has rsync, you can `sync`. If you don't have `emerge-webrsync`, the scripts
+    download a portage snapshot
 7. Run the setup script under chroot  
 > \# /mnt/gentoo/recovery setup
 
