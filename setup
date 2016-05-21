@@ -46,11 +46,19 @@ while test "${#@}" -gt 0; do
 	-g)	run_genkernel="true"
 		memtot=$(awk '/MemTotal/{print$2}' /proc/meminfo)
 		swaptot=$(awk '/SwapTotal/{print$2}' /proc/meminfo)
-		if test $(( $memtot + $swaptot )) -gt 512808; then
-			extraprogs="$extraprogs genkernel-next"
-		else
+		extraprogs="$extraprogs genkernel-next"
+		if test $(( $memtot + $swaptot )) -lt 512808; then
 			# bug 554200
 			(echo Not enough RAM to compile boost for genkernel-next.>&2;)
+			(echo Adding make.conf flags to lower memory requirements.>&2;)
+			sed -i -e '/MAKEOPTS/s/^/#/' /etc/portage/make.conf
+			tee -a /etc/portage/make.conf <<<'MAKEOPTS="-j1"'
+			# very light optimisations
+			tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=20 --param ggc-min-heapsize=32768"'
+			# medium optimisations
+			#tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=10 --param ggc-min-heapsize=8192"'
+			# extreme optimisations
+			#tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=0 --param ggc-min-heapsize=4096 -fno-inline"'
 		fi
 		;;
 	# Set profile to hardened
