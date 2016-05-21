@@ -29,7 +29,7 @@ elif test x"$1" = "xsetup"; then
 elif test x"$1" = "xfetch" || test x"$1" = "xunpack"; then
 	pushd "$INSTDIR"
 	arch=$(uname -m | sed 's/x86_/amd/')
-	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64.txt | awk 'NR==3{print$1}')
+	getpath=$(wget -q -O- http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/latest-stage3-amd64-systemd.txt | awk 'NR==3{print$1}')
 	basepath=$(basename $getpath)
 	wget -c http://${2:-distfiles.gentoo.org}/releases/$arch/autobuilds/$getpath
 	test x"$1" = "xunpack" && $PV $basepath | tar xkjp -C $INSTDIR
