@@ -63,7 +63,9 @@ or an existing Linux distribution.
 7. Run the setup script under chroot  
 > \# /mnt/gentoo/recovery setup
 
-  * If you need to install kernel sources, use the '-g gentoo-sources' flag
+  * If you need to install kernel sources, use the '-g gentoo-sources' flag after adding 'freedist' to your licences:
+  * ```# tee -a /mnt/gentoo/etc/portage/make.conf<<<'ACCEPT_LICENSE="$ACCEPT_LICENSE freedist"'```
+  * ```# /mnt/gentoo/recovery setup -g gentoo-sources```
 8. Wait; and verify the installation
   * Build a kernel and prepare a bootloader
 9. Reboot!
