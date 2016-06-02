@@ -222,4 +222,6 @@ egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
 
 eselect news read
 
+test -f /etc/machine-id || systemd-machine-id-setup
+
 test x"$aac" = "x" || sh -c "$aac"
