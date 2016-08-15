@@ -4,6 +4,7 @@ set -e
 
 extraconfigs="
 NETFILTER_XT_MATCH_RECENT
+EFI_STUB
 "
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
