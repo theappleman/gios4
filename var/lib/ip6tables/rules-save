@@ -7,15 +7,18 @@
 [0:0] -A INPUT -i lo -j ACCEPT
 [0:0] -A INPUT -m conntrack --ctstate INVALID -j DROP
 [0:0] -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-[0:0] -A OUTPUT -m conntrack --ctstate INVALID -j DROP
-[0:0] -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-[0:0] -A OUTPUT -p ipv6-icmp -j ACCEPT
 [0:0] -A INPUT -p ipv6-icmp -j ACCEPT
 [0:0] -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
 [0:0] -A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -j TCP
 [0:0] -A INPUT -p udp -j REJECT --reject-with icmp6-port-unreachable
 [0:0] -A INPUT -p tcp -j REJECT --reject-with tcp-reset
 [0:0] -A INPUT -j REJECT --reject-with icmp6-port-unreachable
+[0:0] -A OUTPUT -o lo -j ACCEPT
+[0:0] -A OUTPUT -m conntrack --ctstate INVALID -j DROP
+[0:0] -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+[0:0] -A OUTPUT -p ipv6-icmp -j ACCEPT
+[0:0] -A OUTPUT -m conntrack --ctstate NEW -m limit --limit 2/min -j LOG --log-prefix "v6-out: "
+[0:0] -A FORWARD -m conntrack --ctstate NEW -m limit --limit 2/min -j LOG --log-prefix "v6-for: "
 [0:0] -A TCP -p tcp -m tcp --dport 22 -m recent --set --name ssh --rsource
 [0:0] -A TCP -p tcp -m tcp --dport 22 -m recent ! --rcheck --seconds 60 --hitcount 4 --name ssh --rsource -j ACCEPT
 COMMIT
