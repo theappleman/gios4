@@ -3,6 +3,10 @@
 set -e
 extraprogs="grub:2"
 
+extraconfigs="
+NETFILTER_XT_MATCH_RECENT
+"
+
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
 get_uuid() {
@@ -130,9 +134,10 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
-		# In addition to adding btrfs RAID to initramfs, pop open
-		# the config menu to add btrfs to the kernel
-		gkopts="$gkopts --btrfs --nconfig"
+		# In addition to adding btrfs RAID to initramfs,
+		# add btrfs support to the kernel
+		gkopts="$gkopts --btrfs"
+		extraconfigs="$extraconfigs BTRFS_FS"
 		# as part of this overlay, btrfs-progs is unmasked
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
@@ -215,7 +220,15 @@ fi
 
 test "$aac" = "*grub-install*" && aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
 
-test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
+if test x"$run_genkernel" = "xtrue"; then
+	for OPT in $extraconfigs; do
+		/usr/src/linux/scripts/config \
+			--file /usr/share/genkernel/arch/$(uname -m | sed -e 's/i6/x/')/kernel-config \
+			-e $OPT
+	done
+
+	/usr/bin/genkernel $gkopts all
+fi
 
 egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
 	sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
