@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-extraprogs="grub:2"
 
 extraconfigs="
 NETFILTER_XT_MATCH_RECENT
@@ -46,6 +45,11 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
+	# Setup grub in bios mode
+	-b)
+		extraprogs="$extraprogs grub:2"
+		bios="true"
+		;;
 	# Run genkernel during the build
 	-g)	run_genkernel="true"
 		memtot=$(awk '/MemTotal/{print$2}' /proc/meminfo)
@@ -195,27 +199,31 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	emerge -1q libtool
 fi
 
-cat >>/etc/fstab <<EOF
-$(get_uuid $(grub-probe -t device / | sed q) /) noatime 1 1
-EOF
+if test x"$bios" = "xtrue"; then
+	if mountpoint -q /boot; then
+		bootpart="$(grub-probe -t device /boot | sed q)"
+		test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
+		$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		EOF
 
-if mountpoint -q /boot; then
-	bootpart="$(grub-probe -t device /boot | sed q)"
-	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
-	$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		# This produces output like:
+		#  (hostdisk//dev/sda,gpt3)
+		grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
+			while read bootdev; do
+				test -b "$bootdev" && aac="$aac grub-install $bootdev;"
+			done
+	else
+		grub-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
+			while read bootdev; do
+				test -b "$bootdev" && aac="$aac grub-install $bootdev;"
+			done
+	fi
+
+	rootpart=$(grub-probe -t device / | sed q)
+	test x"$rootpart" != "x" && uuid=$(get_uuid $rootpart /)
+	test x"$uuid" != "x" && cat >>/etc/fstab<<-EOF
+	$uuid noatime 1 1
 	EOF
-
-	# This produces output like:
-	#  (hostdisk//dev/sda,gpt3)
-	grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub-install $bootdev;"
-		done
-else
-	grub-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub-install $bootdev;"
-		done
 fi
 
 test "$aac" = "*grub-install*" && aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
