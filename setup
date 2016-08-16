@@ -81,7 +81,7 @@ while test "${#@}" -gt 0; do
 			extraprogs="$extraprogs dev-lang/python:2.7"
 		fi
 		aec="$aec eselect python set python2.7; python-updater;"
-		# fall through
+		;& # fall through, requires bash 4.0
 	-x|-x3)
 		aac="$aac emerge -q xen;"
 		if test ! -d /run/lock; then
