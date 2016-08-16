@@ -202,6 +202,7 @@ fi
 
 if test x"$bios" = "xtrue"; then
 	if mountpoint -q /boot; then
+		bootpath=/boot
 		bootpart="$(grub-probe -t device /boot | sed q)"
 		test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
 		$(get_uuid $bootpart /boot) noatime,noauto 1 2
@@ -209,16 +210,12 @@ if test x"$bios" = "xtrue"; then
 
 		# This produces output like:
 		#  (hostdisk//dev/sda,gpt3)
-		grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
-			while read bootdev; do
-				test -b "$bootdev" && aac="$aac grub-install $bootdev;"
-			done
+		bootdev=$(grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)')
 	else
-		grub-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
-			while read bootdev; do
-				test -b "$bootdev" && aac="$aac grub-install $bootdev;"
-			done
+		bootpath=/
 	fi
+	bootdev=$(grub-probe -t drive $bootpath | sed 's://:/:' | egrep -o '/([^,]+)')
+	test -b "$bootdev" && aac="$aac grub-install $bootdev;"
 
 	rootpart=$(grub-probe -t device / | sed q)
 	test x"$rootpart" != "x" && uuid=$(get_uuid $rootpart /)
