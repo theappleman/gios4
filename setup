@@ -222,9 +222,13 @@ if test x"$bios" = "xtrue"; then
 	test x"$uuid" != "x" && cat >>/etc/fstab<<-EOF
 	$uuid noatime 1 1
 	EOF
-fi
 
-test "$aac" = "*grub-install*" && aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
+	case "$aac" in
+		*grub-install*)
+			aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
+			;;
+	esac
+fi
 
 if test x"$run_genkernel" = "xtrue"; then
 	for OPT in $extraconfigs; do
