@@ -228,6 +228,9 @@ if test x"$bios" = "xtrue"; then
 			aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
 			;;
 	esac
+
+	egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
+		sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
 fi
 
 if test x"$run_genkernel" = "xtrue"; then
@@ -239,9 +242,6 @@ if test x"$run_genkernel" = "xtrue"; then
 
 	/usr/bin/genkernel $gkopts all
 fi
-
-egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
-	sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
 
 eselect news read
 
