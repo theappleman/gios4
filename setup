@@ -51,6 +51,13 @@ while test "${#@}" -gt 0; do
 	-b)
 		extraprogs="$extraprogs grub:2"
 		bios="true"
+		if ! egrep -q ' /boot .*[ ,]ro[ ,]' /proc/mounts; then
+			echo "" >&2
+			echo "WARNING: Detected /boot mounted as read-only." >&2
+			echo "WARNING: Remounting as read-write..." >&2
+			echo "" >&2
+			remount=true
+		fi
 		;;
 	# Run genkernel during the build
 	-g)	run_genkernel="true"
@@ -185,8 +192,16 @@ cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
 	emerge -1q --config timezone-data
 
 # Remove udev in favour of systemd
-emerge -qC sys-fs/udev virtual/udev || true
-emerge -q1u systemd
+if qatom /var/db/pkg/sys-fs/udev* | cut -d' ' -f2 | grep '^udev$'; then
+	echo "WARNING: udev installed. Removing..." >&2
+	emerge -qC sys-fs/udev virtual/udev || true
+fi
+
+systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="systemd"{print$3}')
+if test x"$systemdver" != "x" || test "$systemdver" -lt 228; then
+	echo "WARNING: systemd not installed or version too low. Updating..." >&2
+	emerge -q1u '>=systemd-228'
+fi
 
 emerge -qu $fsprogs $extraprogs
 
@@ -223,6 +238,8 @@ if test x"$bios" = "xtrue"; then
 	test x"$uuid" != "x" && cat >>/etc/fstab<<-EOF
 	$uuid noatime 1 1
 	EOF
+
+	test x"$remount" = "xtrue" && mount -o rw,remount /boot
 
 	case "$aac" in
 		*grub-install*)
