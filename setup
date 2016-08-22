@@ -1,7 +1,11 @@
 #!/bin/sh
 
 set -e
-extraprogs="grub:2"
+
+extraconfigs="
+NETFILTER_XT_MATCH_RECENT
+EFI_STUB
+"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
@@ -42,6 +46,11 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
+	# Setup grub in bios mode
+	-b)
+		extraprogs="$extraprogs grub:2"
+		bios="true"
+		;;
 	# Run genkernel during the build
 	-g)	run_genkernel="true"
 		memtot=$(awk '/MemTotal/{print$2}' /proc/meminfo)
@@ -130,9 +139,10 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
-		# In addition to adding btrfs RAID to initramfs, pop open
-		# the config menu to add btrfs to the kernel
-		gkopts="$gkopts --btrfs --nconfig"
+		# In addition to adding btrfs RAID to initramfs,
+		# add btrfs support to the kernel
+		gkopts="$gkopts --btrfs"
+		extraconfigs="$extraconfigs BTRFS_FS"
 		# as part of this overlay, btrfs-progs is unmasked
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
@@ -190,35 +200,48 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	emerge -1q libtool
 fi
 
-cat >>/etc/fstab <<EOF
-$(get_uuid $(grub2-probe -t device / | sed q) /) noatime 1 1
-EOF
+if test x"$bios" = "xtrue"; then
+	if mountpoint -q /boot; then
+		bootpath=/boot
+		bootpart="$(grub-probe -t device /boot | sed q)"
+		test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
+		$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		EOF
 
-if mountpoint -q /boot; then
-	bootpart="$(grub2-probe -t device /boot | sed q)"
-	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
-	$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		# This produces output like:
+		#  (hostdisk//dev/sda,gpt3)
+		bootdev=$(grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)')
+	else
+		bootpath=/
+	fi
+	bootdev=$(grub-probe -t drive $bootpath | sed 's://:/:' | egrep -o '/([^,]+)')
+	test -b "$bootdev" && aac="$aac grub-install $bootdev;"
+
+	rootpart=$(grub-probe -t device / | sed q)
+	test x"$rootpart" != "x" && uuid=$(get_uuid $rootpart /)
+	test x"$uuid" != "x" && cat >>/etc/fstab<<-EOF
+	$uuid noatime 1 1
 	EOF
 
-	# This produces output like:
-	#  (hostdisk//dev/sda,gpt3)
-	grub2-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
-		done
-else
-	grub2-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
-		done
+	case "$aac" in
+		*grub-install*)
+			aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
+			;;
+	esac
+
+	egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
+		sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
 fi
 
-test "$aac" = "*grub2-install*" && aac="$aac grub2-mkconfig -o /boot/grub/grub.cfg;"
+if test x"$run_genkernel" = "xtrue"; then
+	for OPT in $extraconfigs; do
+		/usr/src/linux/scripts/config \
+			--file /usr/share/genkernel/arch/$(uname -m | sed -e 's/i6/x/')/kernel-config \
+			-e $OPT
+	done
 
-test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
-
-egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
-	sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
+	/usr/bin/genkernel $gkopts all
+fi
 
 eselect news read
 
