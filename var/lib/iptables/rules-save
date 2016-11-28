@@ -17,10 +17,12 @@
 [0:0] -A OUTPUT -o lo -j ACCEPT
 [0:0] -A OUTPUT -m conntrack --ctstate INVALID -j DROP
 [0:0] -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-[0:0] -A OUTPUT -p udp --dport 53 -m limit --limit 1/sec -j ACCEPT
-[0:0] -A OUTPUT -p tcp -m multiport --dports 53,80,443 -m limit --limit 1/sec -j ACCEPT
+[0:0] -A OUTPUT -p udp -m multiport --dports 53                  -m limit --limit 60/sec -j ACCEPT
+[0:0] -A OUTPUT -p tcp -m multiport --dports 21,22,53,80,443,873 -m limit --limit 60/sec -j ACCEPT
 [0:0] -A OUTPUT -m conntrack --ctstate NEW -m limit --limit 2/min -j LOG --log-prefix "v4-out: "
+[0:0] -A OUTPUT -j REJECT --reject-with icmp-proto-unreachable
 [0:0] -A FORWARD -m conntrack --ctstate NEW -m limit --limit 2/min -j LOG --log-prefix "v4-for: "
+[0:0] -A FORWARD -j REJECT --reject-with icmp-proto-unreachable
 [0:0] -A TCP -p tcp -m tcp --dport 22 -m recent --set --name ssh --rsource
 [0:0] -A TCP -p tcp -m tcp --dport 22 -m recent ! --rcheck --seconds 60 --hitcount 4 --name ssh --rsource -j ACCEPT
 COMMIT
