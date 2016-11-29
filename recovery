@@ -125,8 +125,8 @@ elif test x"$1" = "xsystemd"; then
 		emerge -qC sys-fs/udev virtual/udev || true
 	fi
 	
-	systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="systemd"{print$3}')
-	if test x"$systemdver" != "x" || test "$systemdver" -lt 228; then
+	systemdver=\$(qatom /var/db/pkg/sys-apps/systemd* | awk '\$1=="sys-apps"&&\$2=="systemd"{print\$3}')
+	if test x"\$systemdver" != "x" || test "\$systemdver" -lt 228; then
 		echo "WARNING: systemd not installed or version too low. Updating..." >&2
 		emerge -q1u '>=systemd-228'
 	fi
