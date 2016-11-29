@@ -51,7 +51,7 @@ while test "${#@}" -gt 0; do
 	-b)
 		extraprogs="$extraprogs grub:2"
 		bios="true"
-		if ! egrep -q ' /boot .*[ ,]ro[ ,]' /proc/mounts; then
+		if mountpoint -q /boot && ! egrep -q ' /boot .*[ ,]ro[ ,]' /proc/mounts; then
 			echo "" >&2
 			echo "WARNING: Detected /boot mounted as read-only." >&2
 			echo "WARNING: Remounting as read-write..." >&2
