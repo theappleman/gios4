@@ -1,7 +1,12 @@
 #!/bin/sh
 
 set -e
-extraprogs="grub:2"
+
+extraconfigs="
+NETFILTER_XT_MATCH_RECENT
+NETFILTER_XT_TARGET_LOG
+EFI_STUB
+"
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
@@ -42,15 +47,35 @@ env-update >/dev/null && source /etc/profile
 
 while test "${#@}" -gt 0; do
 	case "$1" in
+	# Setup grub in bios mode
+	-b)
+		extraprogs="$extraprogs grub:2"
+		bios="true"
+		if mountpoint -q /boot && ! egrep -q ' /boot .*[ ,]ro[ ,]' /proc/mounts; then
+			echo "" >&2
+			echo "WARNING: Detected /boot mounted as read-only." >&2
+			echo "WARNING: Remounting as read-write..." >&2
+			echo "" >&2
+			remount=true
+		fi
+		;;
 	# Run genkernel during the build
 	-g)	run_genkernel="true"
 		memtot=$(awk '/MemTotal/{print$2}' /proc/meminfo)
 		swaptot=$(awk '/SwapTotal/{print$2}' /proc/meminfo)
-		if test $(( $memtot + $swaptot )) -gt 512808; then
-			extraprogs="$extraprogs genkernel-next"
-		else
+		extraprogs="$extraprogs genkernel-next"
+		if test $(( $memtot + $swaptot )) -lt 512808; then
 			# bug 554200
 			(echo Not enough RAM to compile boost for genkernel-next.>&2;)
+			(echo Adding make.conf flags to lower memory requirements.>&2;)
+			sed -i -e '/MAKEOPTS/s/^/#/' /etc/portage/make.conf
+			tee -a /etc/portage/make.conf <<<'MAKEOPTS="-j1"'
+			# very light optimisations
+			tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=20 --param ggc-min-heapsize=32768"'
+			# medium optimisations
+			#tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=10 --param ggc-min-heapsize=8192"'
+			# extreme optimisations
+			#tee -a /etc/portage/make.conf <<<'CFLAGS="$CFLAGS --param ggc-min-expand=0 --param ggc-min-heapsize=4096 -fno-inline"'
 		fi
 		;;
 	# Set profile to hardened
@@ -122,9 +147,10 @@ for i in $(get_fstype); do
 			;;
 	btrfs)	fsprogs="$fsprogs btrfs-progs"
 		dracutopts="$dracutopts btrfs"
-		# In addition to adding btrfs RAID to initramfs, pop open
-		# the config menu to add btrfs to the kernel
-		gkopts="$gkopts --btrfs --nconfig"
+		# In addition to adding btrfs RAID to initramfs,
+		# add btrfs support to the kernel
+		gkopts="$gkopts --btrfs"
+		extraconfigs="$extraconfigs BTRFS_FS"
 		# as part of this overlay, btrfs-progs is unmasked
 		;;
 	xfs)	fsprogs="$fsprogs xfsprogs"
@@ -163,11 +189,19 @@ test x"$bec" = "x" || sh -c "$bec"
 emerge -q1u portage
 
 cmp -s /etc/localtime /usr/share/zoneinfo/Factory && \
-	emerge -1q timezone-data
+	emerge -1q --config timezone-data
 
 # Remove udev in favour of systemd
-emerge -qC sys-fs/udev virtual/udev || true
-emerge -q1u systemd
+if qatom /var/db/pkg/sys-fs/udev* | cut -d' ' -f2 | grep '^udev$'; then
+	echo "WARNING: udev installed. Removing..." >&2
+	emerge -qC sys-fs/udev virtual/udev || true
+fi
+
+systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="systemd"{print$3}')
+if test x"$systemdver" != "x" || test "$systemdver" -lt 228; then
+	echo "WARNING: systemd not installed or version too low. Updating..." >&2
+	emerge -q1u '>=systemd-228'
+fi
 
 emerge -qu $fsprogs $extraprogs
 
@@ -182,36 +216,53 @@ if egrep -q 'sys-devel/gcc' /var/log/emerge.log; then
 	emerge -1q libtool
 fi
 
-cat >>/etc/fstab <<EOF
-$(get_uuid $(grub2-probe -t device / | sed q) /) noatime 1 1
-EOF
+if test x"$bios" = "xtrue"; then
+	if mountpoint -q /boot; then
+		bootpath=/boot
+		bootpart="$(grub-probe -t device /boot | sed q)"
+		test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
+		$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		EOF
 
-if mountpoint -q /boot; then
-	bootpart="$(grub2-probe -t device /boot | sed q)"
-	test  "$bootpart" = "/dev/*" && cat >>/etc/fstab <<-EOF
-	$(get_uuid $bootpart /boot) noatime,noauto 1 2
+		# This produces output like:
+		#  (hostdisk//dev/sda,gpt3)
+		bootdev=$(grub-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)')
+	else
+		bootpath=/
+	fi
+	bootdev=$(grub-probe -t drive $bootpath | sed 's://:/:' | egrep -o '/([^,]+)')
+	test -b "$bootdev" && aac="$aac grub-install $bootdev;"
+
+	rootpart=$(grub-probe -t device / | sed q)
+	test x"$rootpart" != "x" && uuid=$(get_uuid $rootpart /)
+	test x"$uuid" != "x" && cat >>/etc/fstab<<-EOF
+	$uuid noatime 1 1
 	EOF
 
-	# This produces output like:
-	#  (hostdisk//dev/sda,gpt3)
-	grub2-probe -t drive /boot | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
-		done
-else
-	grub2-probe -t drive / | sed 's://:/:' | egrep -o '/([^,]+)' | \
-		while read bootdev; do
-			test -b "$bootdev" && aac="$aac grub2-install $bootdev;"
-		done
+	test x"$remount" = "xtrue" && mount -o rw,remount /boot
+
+	case "$aac" in
+		*grub-install*)
+			aac="$aac grub-mkconfig -o /boot/grub/grub.cfg;"
+			;;
+	esac
+
+	egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
+		sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
 fi
 
-test "$aac" = "*grub2-install*" && aac="$aac grub2-mkconfig -o /boot/grub/grub.cfg;"
+if test x"$run_genkernel" = "xtrue"; then
+	for OPT in $extraconfigs; do
+		/usr/src/linux/scripts/config \
+			--file /usr/share/genkernel/arch/$(uname -m | sed -e 's/i6/x/')/kernel-config \
+			-e $OPT
+	done
 
-test x"$run_genkernel" = "xtrue" && /usr/bin/genkernel $gkopts all
-
-egrep -q '^[^#]*GRUB_CMDLINE_LINUX=' /etc/default/grub || \
-	sed -i -e '/# GRUB_CMDLINE_LINUX="init=\/usr\/lib\/systemd\/systemd"/s/^# //' /etc/default/grub
+	/usr/bin/genkernel $gkopts all
+fi
 
 eselect news read
+
+test -f /etc/machine-id || systemd-machine-id-setup
 
 test x"$aac" = "x" || sh -c "$aac"
