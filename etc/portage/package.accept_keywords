@@ -12,5 +12,5 @@
 # required by virtual/udev-215::gentoo[systemd]
 # required by sys-apps/hwids-20150717-r1::gentoo[udev]
 =sys-apps/util-linux-2.27.1 ~amd64
-# required by =systemd-228-r1
-=sys-apps/systemd-228-r1 ~amd64
+# required by ~systemd-228
+=sys-apps/systemd-228-r5 ~amd64
