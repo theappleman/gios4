@@ -31,6 +31,7 @@ use() {
 	test x"$2" = "x" && exit 4
 	category=$(dirname $1)
 	package=$(basename $1)
+	shift
 
 	if test -f $packageuse; then
 		echo "$category/$package $@" >> $packageuse
@@ -127,7 +128,6 @@ for i in $(get_fstype); do
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
 				gkopts="$gkopts --mdadm"
-				aec="$aec rc-update add mdraid boot;"
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
@@ -140,7 +140,8 @@ for i in $(get_fstype); do
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
 			gkopts="$gkopts --lvm"
-			aec="$aec rc-update add lvm boot;"
+			aec="$aec systemctl enable lvm2-lvmetad;"
+			aec="$aec systemctl enable lvm2-lvmonitor;"
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
@@ -201,6 +202,13 @@ systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="sys
 if test x"$systemdver" != "x" || test "$systemdver" -gt 228; then
 	echo "WARNING: systemd not installed or version too low. Updating..." >&2
 	emerge -q1u '>=systemd-228'
+fi
+
+if ! emerge -1pq dev-lang/perl; then
+	echo "WARNING: perl cannot be emerged." >&2
+	echo "WARNING: attempting to fix..." >&2
+	
+	(qlist -IC 'virtual/perl-*'; qlist -IC 'dev-perl/*') | sort -u | xargs emerge -1q dev-lang/perl
 fi
 
 emerge -qu $fsprogs $extraprogs
