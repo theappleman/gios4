@@ -31,6 +31,7 @@ use() {
 	test x"$2" = "x" && exit 4
 	category=$(dirname $1)
 	package=$(basename $1)
+	shift
 
 	if test -f $packageuse; then
 		echo "$category/$package $@" >> $packageuse
