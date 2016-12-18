@@ -127,7 +127,6 @@ for i in $(get_fstype); do
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
 				gkopts="$gkopts --mdadm"
-				aec="$aec rc-update add mdraid boot;"
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
@@ -140,7 +139,8 @@ for i in $(get_fstype); do
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
 			gkopts="$gkopts --lvm"
-			aec="$aec rc-update add lvm boot;"
+			aec="$aec systemctl enable lvm2-lvmetad;"
+			aec="$aec systemctl enable lvm2-lvmonitor;"
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
