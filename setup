@@ -203,6 +203,13 @@ if test x"$systemdver" != "x" || test "$systemdver" -lt 228; then
 	emerge -q1u '>=systemd-228'
 fi
 
+if ! emerge -1pq dev-lang/perl; then
+	echo "WARNING: perl cannot be emerged." >&2
+	echo "WARNING: attempting to fix..." >&2
+	
+	(qlist -IC 'virtual/perl-*'; qlist -IC 'dev-perl/*') | sort -u | xargs emerge -1q dev-lang/perl
+fi
+
 emerge -qu $fsprogs $extraprogs
 
 test x"$aec" = "x" || sh -c "$aec"
