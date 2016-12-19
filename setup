@@ -3,6 +3,7 @@
 set -e
 
 extraconfigs="
+GENTOO_LINUX_INIT_SYSTEMD
 NETFILTER_XT_MATCH_RECENT
 NETFILTER_XT_TARGET_LOG
 EFI_STUB
@@ -141,7 +142,7 @@ for i in $(get_fstype); do
 			dracutopts="$dracutopts lvm"
 			gkopts="$gkopts --lvm"
 			aec="$aec systemctl enable lvm2-lvmetad;"
-			aec="$aec systemctl enable lvm2-lvmonitor;"
+			aec="$aec systemctl enable lvm2-monitor;"
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
@@ -202,13 +203,6 @@ systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="sys
 if test x"$systemdver" != "x" || test "$systemdver" -gt 228; then
 	echo "WARNING: systemd not installed or version too low. Updating..." >&2
 	emerge -q1u '>=systemd-228'
-fi
-
-if ! emerge -1pq dev-lang/perl; then
-	echo "WARNING: perl cannot be emerged." >&2
-	echo "WARNING: attempting to fix..." >&2
-	
-	(qlist -IC 'virtual/perl-*'; qlist -IC 'dev-perl/*') | sort -u | xargs emerge -1q dev-lang/perl
 fi
 
 emerge -qu $fsprogs $extraprogs
