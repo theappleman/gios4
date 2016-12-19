@@ -130,13 +130,6 @@ elif test x"$1" = "xsystemd"; then
 		echo "WARNING: systemd not installed or version too low. Updating..." >&2
 		emerge -q1u '>=systemd-228'
 	fi
-	if ! emerge -1pq dev-lang/perl; then
-		echo "WARNING: perl cannot be emerged." >&2
-		echo "WARNING: attempting to fix..." >&2
-
-		(qlist -IC 'virtual/perl-*'; qlist -IC 'dev-perl/*') | sort -u | xargs emerge -1q dev-lang/perl
-	fi
-
 	sed -i -e '/^hosts/s/files dns/files mymachines resolve dns/' /etc/nsswitch.conf
 	sed -i -e '/util-linux/d' /etc/portage/package.use/sys-apps
 	rm /etc/resolv.conf; ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
