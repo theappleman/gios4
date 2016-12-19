@@ -140,7 +140,7 @@ for i in $(get_fstype); do
 			dracutopts="$dracutopts lvm"
 			gkopts="$gkopts --lvm"
 			aec="$aec systemctl enable lvm2-lvmetad;"
-			aec="$aec systemctl enable lvm2-lvmonitor;"
+			aec="$aec systemctl enable lvm2-monitor;"
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
