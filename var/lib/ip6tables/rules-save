@@ -18,7 +18,7 @@
 [0:0] -A OUTPUT -m conntrack --ctstate INVALID -j DROP
 [0:0] -A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 [0:0] -A OUTPUT -p ipv6-icmp -j ACCEPT
-[0:0] -A OUTPUT -p udp -m multiport --dports 53                  -m limit --limit 60/sec -j ACCEPT
+[0:0] -A OUTPUT -p udp -m multiport --dports 53,123              -m limit --limit 60/sec -j ACCEPT
 [0:0] -A OUTPUT -p tcp -m multiport --dports 21,22,53,80,443,873 -m limit --limit 60/sec -j ACCEPT
 [0:0] -A OUTPUT -m conntrack --ctstate NEW -m limit --limit 2/min -j LOG --log-prefix "v6-out: "
 [0:0] -A OUTPUT -j REJECT --reject-with icmp6-port-unreachable
