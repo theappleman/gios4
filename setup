@@ -137,6 +137,7 @@ for i in $(get_fstype); do
 			use	dev-libs/libgcrypt	static-libs
 			use	dev-libs/libgpg-error	static-libs
 			use	sys-apps/util-linux	static-libs
+			use	sys-apps/systemd	cryptsetup
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
