@@ -107,6 +107,12 @@ while test "${#@}" -gt 0; do
 			chmod 775 /run/lock
 		fi
 		;;
+	--xe)
+		tee -a /etc/portage/package.{unmask,accept_keywords} <<<"app-emulation/xe-guest-utilities"
+		use app-emulation/xe-guest-utilities xenstore
+		extraprogs="$extraprogs xe-guest-utilities"
+		extraconfigs="$extraconfigs XENFS XEN_COMPAT_XENFS"
+		;;
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
 		bec="$bec emerge -qe system;"
