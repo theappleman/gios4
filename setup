@@ -11,6 +11,8 @@ EFI_STUB
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
 
+dracutopts="caps"
+
 get_uuid() {
 	test "$1" || exit 1
 	test "$2" || exit 2
