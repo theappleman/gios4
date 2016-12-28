@@ -10,4 +10,4 @@
 =sys-apps/systemd-232 ~amd64
 # required by sys-apps/systemd-232::gentoo
 # required by >=systemd-228 (argument)
-=sys-apps/util-linux-2.29 ~amd64
+=sys-apps/util-linux-2.27.1 ~amd64
