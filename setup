@@ -113,7 +113,7 @@ while test "${#@}" -gt 0; do
 		tee -a /etc/portage/package.{unmask,accept_keywords} <<<"app-emulation/xe-guest-utilities"
 		use app-emulation/xe-guest-utilities xenstore
 		extraprogs="$extraprogs xe-guest-utilities"
-		extraconfigs="$extraconfigs XENFS XEN_COMPAT_XENFS"
+		extraconfigs="$extraconfigs HYPERVISOR_GUEST PARAVIRT XEN XENFS XEN_COMPAT_XENFS"
 		;;
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
