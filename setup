@@ -3,12 +3,15 @@
 set -e
 
 extraconfigs="
+GENTOO_LINUX_INIT_SYSTEMD
 NETFILTER_XT_MATCH_RECENT
 NETFILTER_XT_TARGET_LOG
 EFI_STUB
 "
 
 arch=$(uname -m | sed -e 's/x86_/amd/;s/i6/x/')
+
+dracutopts="caps"
 
 get_uuid() {
 	test "$1" || exit 1
@@ -31,6 +34,7 @@ use() {
 	test x"$2" = "x" && exit 4
 	category=$(dirname $1)
 	package=$(basename $1)
+	shift
 
 	if test -f $packageuse; then
 		echo "$category/$package $@" >> $packageuse
@@ -105,6 +109,12 @@ while test "${#@}" -gt 0; do
 			chmod 775 /run/lock
 		fi
 		;;
+	--xe)
+		tee -a /etc/portage/package.{unmask,accept_keywords} <<<"app-emulation/xe-guest-utilities"
+		use app-emulation/xe-guest-utilities xenstore
+		extraprogs="$extraprogs xe-guest-utilities"
+		extraconfigs="$extraconfigs HYPERVISOR_GUEST PARAVIRT XEN XENFS XEN_COMPAT_XENFS"
+		;;
 	# do a stage1 install
 	-1)	bec="/usr/portage/scripts/bootstrap.sh;"
 		bec="$bec emerge -qe system;"
@@ -127,7 +137,6 @@ for i in $(get_fstype); do
 	linux_raid_member)	fsprogs="$fsprogs mdadm"
 				dracutopts="$dracutopts mdraid"
 				gkopts="$gkopts --mdadm"
-				aec="$aec rc-update add mdraid boot;"
 				;;
 	crypto_LUKS)	fsprogs="$fsprogs cryptsetup"
 			dracutopts="$dracutopts crypt"
@@ -136,11 +145,13 @@ for i in $(get_fstype); do
 			use	dev-libs/libgcrypt	static-libs
 			use	dev-libs/libgpg-error	static-libs
 			use	sys-apps/util-linux	static-libs
+			use	sys-apps/systemd	cryptsetup
 			;;
 	LVM2_member)	fsprogs="$fsprogs lvm2"
 			dracutopts="$dracutopts lvm"
 			gkopts="$gkopts --lvm"
-			aec="$aec rc-update add lvm boot;"
+			aec="$aec systemctl enable lvm2-lvmetad;"
+			aec="$aec systemctl enable lvm2-monitor;"
 			use	sys-boot/grub:2		device-mapper
 			;;
 	reiserfs)	fsprogs="$fsprogs reiserfsprogs"
@@ -198,7 +209,7 @@ if qatom /var/db/pkg/sys-fs/udev* | cut -d' ' -f2 | grep '^udev$'; then
 fi
 
 systemdver=$(qatom /var/db/pkg/sys-apps/systemd* | awk '$1=="sys-apps"&&$2=="systemd"{print$3}')
-if test x"$systemdver" != "x" || test "$systemdver" -lt 228; then
+if test x"$systemdver" != "x" || test "$systemdver" -gt 228; then
 	echo "WARNING: systemd not installed or version too low. Updating..." >&2
 	emerge -q1u '>=systemd-228'
 fi
